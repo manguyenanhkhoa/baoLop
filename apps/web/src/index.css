@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "DM Sans", sans-serif;
+  overflow-x: clip;
+}
+
+@layer base {
+  :root {
+    --background: 24 12% 8%;
+    --foreground: 40 30% 96%;
+    --card: 24 10% 12%;
+    --card-foreground: 40 30% 96%;
+    --popover: 24 10% 12%;
+    --popover-foreground: 40 30% 96%;
+    --primary: 28 92% 54%;
+    --primary-foreground: 24 20% 8%;
+    --secondary: 24 8% 18%;
+    --secondary-foreground: 40 30% 96%;
+    --muted: 24 8% 18%;
+    --muted-foreground: 30 8% 62%;
+    --accent: 28 92% 54%;
+    --accent-foreground: 24 20% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 24 8% 22%;
+    --input: 24 8% 22%;
+    --ring: 28 92% 54%;
+    --radius: 0.35rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  h1, h2, h3, .font-display {
+    font-family: "Oswald", sans-serif;
+  }
+}
+
+.text-balance {
+  text-wrap: balance;
+}
