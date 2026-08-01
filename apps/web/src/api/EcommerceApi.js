@@ -1,5 +1,6 @@
 // EcommerceApi.js
 //
+fix/vercel-build
 // Lớp gọi dữ liệu cho toàn bộ store. Giờ lấy dữ liệu thật từ Supabase
 // (bảng products / product_variants / orders / order_items — xem
 // supabase/schema.sql). Giữ nguyên tên hàm + shape dữ liệu trả về để
@@ -64,6 +65,7 @@ const PRODUCT_SELECT = '*, product_variants(*)';
 // Trả về danh sách sản phẩm.
 // params: { limit?: string | number }
 export async function getProducts(params = {}) {
+fix/vercel-build
   let query = supabase.from('products').select(PRODUCT_SELECT).order('created_at', { ascending: false });
 
   const limit = params?.limit ? Number(params.limit) : undefined;
@@ -75,10 +77,12 @@ export async function getProducts(params = {}) {
   if (error) throw error;
 
   return { products: (data ?? []).map(mapProduct) };
+
 }
 
 // Trả về chi tiết 1 sản phẩm theo id.
 export async function getProduct(id) {
+fix/vercel-build
   const { data, error } = await supabase
     .from('products')
     .select(PRODUCT_SELECT)
@@ -88,11 +92,13 @@ export async function getProduct(id) {
   if (error) throw new Error('Không tìm thấy sản phẩm.');
 
   return mapProduct(data);
+
 }
 
 // Trả về tồn kho của các variant thuộc danh sách product_ids.
 // params: { fields?: string, product_ids: string[] }
 export async function getProductQuantities(params = {}) {
+fix/vercel-build
   const productIds = params?.product_ids ?? [];
 
   if (productIds.length === 0) {
