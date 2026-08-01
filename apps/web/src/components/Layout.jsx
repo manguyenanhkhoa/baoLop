@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { ShoppingCart as CartIcon, Search, Boxes } from 'lucide-react';
+import { ShoppingCart as CartIcon, Search, Boxes, User, LayoutDashboard } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 import ShoppingCart from '@/components/ShoppingCart';
 const navClass = ({
   isActive
@@ -12,6 +13,7 @@ const Layout = () => {
   const {
     cartItems
   } = useCart();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const count = cartItems.reduce((n, i) => n + i.quantity, 0);
@@ -33,6 +35,25 @@ const Layout = () => {
             <NavLink to="/" className={navClass} end>Trang chủ</NavLink>
             <NavLink to="/store" className={navClass}>Sản phẩm</NavLink>
           </nav>
+
+          {isAdmin && (
+            <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary sm:flex">
+              <LayoutDashboard className="h-4 w-4" />
+              Quản trị
+            </Link>
+          )}
+
+          {user ? (
+            <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary sm:flex" title={profile?.full_name}>
+              <User className="h-4 w-4" />
+              Đăng xuất
+            </button>
+          ) : (
+            <Link to="/login" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary sm:flex">
+              <User className="h-4 w-4" />
+              Đăng nhập
+            </Link>
+          )}
 
           <button onClick={() => setIsCartOpen(true)} className="relative ml-2 rounded-full border border-border p-2 hover:border-primary" aria-label="Giỏ hàng">
             <CartIcon className="h-5 w-5" />
