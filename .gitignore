@@ -2,3 +2,6 @@ node_modules/
 dist/
 .DS_Store
 *.log
+fix/vercel-build
+apps/web/.env
+apps/web/.env.local
