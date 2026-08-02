@@ -16,6 +16,7 @@ const RegisterPage = () => {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async (e) => {
@@ -26,8 +27,21 @@ const RegisterPage = () => {
       return;
     }
 
+    if (password !== confirmPassword) {
+      toast({ title: 'Mật khẩu xác nhận không khớp', description: 'Vui lòng nhập lại cho khớp với mật khẩu ở trên.', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
-    const { error } = await signUp({ email, password, fullName, phone });
+    // emailRedirectTo: dùng đúng domain đang chạy (localhost lúc dev, domain
+    // thật lúc đã deploy) để link xác nhận trong email luôn trỏ đúng chỗ.
+    const { error } = await signUp({
+      email,
+      password,
+      fullName,
+      phone,
+      emailRedirectTo: `${window.location.origin}/login`,
+    });
     setSubmitting(false);
 
     if (error) {
@@ -41,7 +55,10 @@ const RegisterPage = () => {
       return;
     }
 
-    toast({ title: 'Tạo tài khoản thành công', description: 'Bạn có thể đăng nhập ngay bây giờ.' });
+    toast({
+      title: 'Tạo tài khoản thành công 🎉',
+      description: 'Kiểm tra email để xác nhận tài khoản, sau đó quay lại đăng nhập nhé.',
+    });
     navigate('/login');
   };
 
@@ -61,8 +78,8 @@ const RegisterPage = () => {
             <Input id="fullName" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nguyễn Văn A" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Số điện thoại</Label>
-            <Input id="phone" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="09xxxxxxxx" />
+            <Label htmlFor="phone">Số điện thoại <span className="text-muted-foreground font-normal">(không bắt buộc)</span></Label>
+            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="09xxxxxxxx" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -71,6 +88,10 @@ const RegisterPage = () => {
           <div className="space-y-2">
             <Label htmlFor="password">Mật khẩu</Label>
             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Ít nhất 6 ký tự" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+            <Input id="confirmPassword" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu" />
           </div>
           <Button type="submit" disabled={submitting} className="w-full">
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

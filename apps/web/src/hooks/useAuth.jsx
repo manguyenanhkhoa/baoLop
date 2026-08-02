@@ -40,11 +40,14 @@ export const AuthProvider = ({ children }) => {
     return () => listener.subscription.unsubscribe();
   }, [loadProfile]);
 
-  const signUp = async ({ email, password, fullName, phone }) => {
+  const signUp = async ({ email, password, fullName, phone, emailRedirectTo }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, phone } },
+      options: {
+        data: { full_name: fullName, phone },
+        emailRedirectTo: emailRedirectTo ?? `${window.location.origin}/login`,
+      },
     });
     return { data, error };
   };
