@@ -103,14 +103,14 @@ const Layout = () => {
           <div>
             <h4 className="font-display font-semibold">Liên hệ</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>Hotline: 0900 000 000</li>
-              <li>Email: shop@modelcraft.vn</li>
-              <li>TP. Hồ Chí Minh, Việt Nam</li>
+              <li>Hotline: 0559 819 742</li>
+              <li>Email: manguyenanhkhoa@gmail.com</li>
+              <li>Địa chỉ: 349 đường Tân Túc, huyện Bình Chánh, Thành phố Hồ Chí Minh</li>
             </ul>
           </div>
         </div>
         <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} ModelCraft. Đã đăng ký bản quyền.
+          © {new Date().getFullYear()} Design by Sombre Licorne.
         </div>
       </footer>
 
