@@ -38,8 +38,8 @@ const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>ModelCraft — Mô hình, sa bàn & xe die-cast 1:64, 1:34</title>
-        <meta name="description" content="Cửa hàng mô hình, sa bàn và xe die-cast tỉ lệ 1:64, 1:34 chất lượng cao. Tìm kiếm, lọc và đặt hàng nhanh chóng." />
+        <title>Báo Lốp - Mô Hình Xe</title>
+        <meta name="description" content="Cửa hàng mô hình, sa bàn và xe die-cast tỉ lệ 1:64, 1:34. " />
       </Helmet>
 
       <section className="relative flex min-h-[82vh] items-center">
