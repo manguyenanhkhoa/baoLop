@@ -4,6 +4,7 @@ import { ShoppingCart as CartIcon, Search, Boxes, User, LayoutDashboard } from '
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import ShoppingCart from '@/components/ShoppingCart';
+import WelcomeBanner from '@/components/WelcomeBanner';
 const navClass = ({
   isActive
 }) => `text-sm font-medium uppercase tracking-wide transition-colors ${isActive ? 'text-primary' : 'text-foreground/80 hover:text-primary'}`;
@@ -70,6 +71,7 @@ const Layout = () => {
       </header>
 
       <main className="flex-1">
+        <WelcomeBanner />
         <Outlet context={{
         openCart: () => setIsCartOpen(true)
       }} />

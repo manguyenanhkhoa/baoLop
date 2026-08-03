@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,10 +23,10 @@ const LoginPage = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await signIn({ email, password });
-    setSubmitting(false);
+    const { data, error } = await signIn({ email, password });
 
     if (error) {
+      setSubmitting(false);
       toast({
         title: 'Đăng nhập thất bại',
         description: error.message === 'Invalid login credentials'
@@ -36,8 +37,24 @@ const LoginPage = () => {
       return;
     }
 
-    toast({ title: 'Đăng nhập thành công' });
-    navigate(from, { replace: true });
+    // Lấy ngay hồ sơ (tên, quyền admin) để hiện box chào mừng đúng vai trò,
+    // không cần đợi AuthProvider tự cập nhật (tránh độ trễ/hiện sai).
+    let fullName = '';
+    let isAdmin = false;
+    if (data?.user?.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, is_admin')
+        .eq('id', data.user.id)
+        .single();
+      fullName = profile?.full_name ?? '';
+      isAdmin = profile?.is_admin === true;
+    }
+
+    sessionStorage.setItem('welcomeBox', JSON.stringify({ fullName, isAdmin }));
+
+    setSubmitting(false);
+    navigate(isAdmin ? '/admin' : from, { replace: true });
   };
 
   return (
