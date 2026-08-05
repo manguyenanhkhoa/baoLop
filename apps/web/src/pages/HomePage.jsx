@@ -42,24 +42,24 @@ const HomePage = () => {
         <meta name="description" content="Cửa hàng mô hình, sa bàn và xe die-cast tỉ lệ 1:64, 1:34. " />
       </Helmet>
 
-      <section className="relative flex min-h-[82vh] items-center">
+      <section className="relative flex min-h-[70vh] items-center sm:min-h-[82vh]">
         <img src={heroImage} alt="Bộ sưu tập mô hình" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
-        <div className="relative mx-auto w-full max-w-[90rem] px-6">
+        <div className="relative mx-auto w-full max-w-[90rem] px-4 sm:px-6">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-2xl">
-            <span className="inline-block rounded-full border border-primary/50 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-primary">Bộ sưu tập chính hãng</span>
-            <h1 className="mt-5 font-display text-5xl font-bold leading-[1.05] sm:text-6xl md:text-7xl">
+            <span className="inline-block rounded-full border border-primary/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary sm:px-4 sm:text-xs">Bộ sưu tập chính hãng</span>
+            <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] sm:mt-5 sm:text-6xl sm:leading-[1.05] md:text-7xl">
               Thế giới <span className="text-primary">mô hình</span> & sa bàn tỉ lệ
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-foreground/80">
-              Xe die-cast 1:64, 1:34, sa bàn tiểu cảnh thủ công và hàng ngàn phụ kiện cho người sưu tầm. Chất lượng cao, giao hàng toàn quốc.
+            <p className="mt-4 max-w-xl text-base text-foreground/80 sm:mt-5 sm:text-lg">
+              Xe die-cast 1:64, 1:32, sa bàn tiểu cảnh thủ công và hàng ngàn phụ kiện cho người sưu tầm. Chất lượng cao, giao hàng toàn quốc.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-6 flex flex-wrap gap-3 sm:mt-8 sm:gap-4">
               <Button asChild size="lg" className="font-semibold">
                 <Link to="/store">Khám phá sản phẩm <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="font-semibold">
-                <Link to="/store?q=sa bàn">Xem sa bàn</Link>
+                <Link to="/store?category=diorama">Xem sa bàn</Link>
               </Button>
             </div>
           </motion.div>
@@ -67,28 +67,28 @@ const HomePage = () => {
       </section>
 
       <section className="border-y border-border bg-card">
-        <div className="mx-auto grid max-w-[90rem] gap-6 px-6 py-8 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-[90rem] gap-5 px-4 py-6 sm:grid-cols-3 sm:gap-6 sm:px-6 sm:py-8">
           {[
             { icon: Truck, t: 'Giao hàng toàn quốc', d: 'Đóng gói chống sốc cẩn thận' },
             { icon: ShieldCheck, t: 'Cam kết chính hãng', d: 'Đổi trả trong 7 ngày' },
             { icon: Award, t: 'Chất lượng sưu tầm', d: 'Chi tiết sắc nét, tỉ lệ chuẩn' },
           ].map(({ icon: Icon, t, d }) => (
-            <div key={t} className="flex items-center gap-4">
-              <Icon className="h-9 w-9 shrink-0 text-primary" />
+            <div key={t} className="flex items-center gap-3 sm:gap-4">
+              <Icon className="h-7 w-7 shrink-0 text-primary sm:h-9 sm:w-9" />
               <div>
-                <p className="font-display font-semibold">{t}</p>
-                <p className="text-sm text-muted-foreground">{d}</p>
+                <p className="font-display text-sm font-semibold sm:text-base">{t}</p>
+                <p className="text-xs text-muted-foreground sm:text-sm">{d}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-[90rem] px-6 py-16">
-        <div className="mb-8 flex items-end justify-between">
+      <section className="mx-auto max-w-[90rem] px-4 py-10 sm:px-6 sm:py-16">
+        <div className="mb-6 flex items-end justify-between sm:mb-8">
           <div>
-            <h2 className="font-display text-3xl font-bold sm:text-4xl">Sản phẩm nổi bật</h2>
-            <p className="mt-2 text-muted-foreground">Những mẫu được người sưu tầm yêu thích nhất.</p>
+            <h2 className="font-display text-2xl font-bold sm:text-4xl">Sản phẩm nổi bật</h2>
+            <p className="mt-1 text-sm text-muted-foreground sm:mt-2 sm:text-base">Những mẫu được người sưu tầm yêu thích nhất.</p>
           </div>
           <Link to="/store" className="hidden items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex">
             Xem tất cả <ArrowRight className="h-4 w-4" />
@@ -96,9 +96,9 @@ const HomePage = () => {
         </div>
 
         {loading ? (
-          <div className="flex h-64 items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>
+          <div className="flex h-64 items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary sm:h-12 sm:w-12" /></div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
           </div>
         )}

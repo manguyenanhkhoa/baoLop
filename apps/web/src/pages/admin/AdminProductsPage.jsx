@@ -14,9 +14,18 @@ import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from '@/components/ui/table';
 import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from '@/components/ui/select';
+import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
   AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from '@/components/ui/alert-dialog';
+
+const CATEGORY_OPTIONS = [
+  { value: '1:64', label: 'Xe 1:64' },
+  { value: '1:32', label: 'Xe 1:32' },
+  { value: 'diorama', label: 'Sa bàn / Diorama' },
+];
 
 const emptyVariant = () => ({
   _key: crypto.randomUUID(),
@@ -35,6 +44,7 @@ const emptyForm = () => ({
   description: '',
   image: '',
   ribbon_text: '',
+  category: '1:64',
   purchasable: true,
   variants: [emptyVariant()],
 });
@@ -78,6 +88,7 @@ const AdminProductsPage = () => {
       description: product.description ?? '',
       image: product.image ?? '',
       ribbon_text: product.ribbon_text ?? '',
+      category: product.category ?? '1:64',
       purchasable: product.purchasable ?? true,
       variants: (product.product_variants ?? []).map((v) => ({
         _key: v.id,
@@ -118,6 +129,7 @@ const AdminProductsPage = () => {
         image: form.image || null,
         images: form.image ? [{ url: form.image }] : [],
         ribbon_text: form.ribbon_text || null,
+        category: form.category,
         purchasable: form.purchasable,
         additional_info: [],
       };
@@ -198,6 +210,7 @@ const AdminProductsPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Sản phẩm</TableHead>
+              <TableHead>Phân loại</TableHead>
               <TableHead>Giá</TableHead>
               <TableHead>Tồn kho</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
@@ -205,9 +218,9 @@ const AdminProductsPage = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="mx-auto h-5 w-5 animate-spin" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8"><Loader2 className="mx-auto h-5 w-5 animate-spin" /></TableCell></TableRow>
             ) : products.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Chưa có sản phẩm nào.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Chưa có sản phẩm nào.</TableCell></TableRow>
             ) : products.map((p) => {
               const totalStock = (p.product_variants ?? []).reduce((s, v) => s + (v.inventory_quantity ?? 0), 0);
               const minPrice = Math.min(...(p.product_variants ?? []).map((v) => v.sale_price_in_cents ?? v.price_in_cents ?? 0));
@@ -220,6 +233,7 @@ const AdminProductsPage = () => {
                       <p className="text-xs text-muted-foreground">{(p.product_variants ?? []).length} biến thể</p>
                     </div>
                   </TableCell>
+                  <TableCell className="text-sm">{CATEGORY_OPTIONS.find((c) => c.value === p.category)?.label ?? p.category}</TableCell>
                   <TableCell>{formatCurrency(minPrice, VND_CURRENCY)}</TableCell>
                   <TableCell>{totalStock}</TableCell>
                   <TableCell className="text-right space-x-1">
@@ -261,6 +275,18 @@ const AdminProductsPage = () => {
                 <Label>Nhãn (VD: Mới về, Bán chạy)</Label>
                 <Input value={form.ribbon_text} onChange={(e) => setForm((f) => ({ ...f, ribbon_text: e.target.value }))} />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Phân loại</Label>
+              <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_OPTIONS.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

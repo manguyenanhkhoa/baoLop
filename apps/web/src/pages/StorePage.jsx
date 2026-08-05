@@ -6,11 +6,11 @@ import { getProducts, getProductQuantities } from '@/api/EcommerceApi';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 
-const SIZES = [
+const CATEGORIES = [
   { key: 'all', label: 'Tất cả' },
   { key: '1:64', label: 'Xe 1:64' },
-  { key: '1:34', label: 'Xe 1:34' },
-  { key: 'sa bàn', label: 'Sa bàn / Diorama' },
+  { key: '1:32', label: 'Xe 1:32' },
+  { key: 'diorama', label: 'Sa bàn / Diorama' },
 ];
 
 const PRICES = [
@@ -20,16 +20,11 @@ const PRICES = [
   { key: 'c', label: 'Trên 800.000đ', min: 800000, max: Infinity },
 ];
 
-const matchSize = (p, size) => {
-  if (size === 'all') return true;
-  return (p.title || '').toLowerCase().includes(size.toLowerCase());
-};
-
 const StorePage = () => {
   const [params, setParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [size, setSize] = useState('all');
+  const [category, setCategory] = useState(params.get('category') || 'all');
   const [price, setPrice] = useState('all');
   const q = params.get('q') || '';
 
@@ -60,55 +55,75 @@ const StorePage = () => {
     const priceRange = PRICES.find((x) => x.key === price);
     return products.filter((p) => {
       if (q && !(`${p.title} ${p.subtitle || ''}`.toLowerCase().includes(q.toLowerCase()))) return false;
-      if (!matchSize(p, size)) return false;
+      if (category !== 'all' && p.category !== category) return false;
       const cents = p.variants[0]?.sale_price_in_cents ?? p.variants[0]?.price_in_cents ?? 0;
       if (cents < priceRange.min || cents > priceRange.max) return false;
       return true;
     });
-  }, [products, q, size, price]);
+  }, [products, q, category, price]);
+
+  const clearFilters = () => {
+    setCategory('all');
+    setPrice('all');
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('category');
+      next.delete('q');
+      return next;
+    });
+  };
 
   return (
     <>
       <Helmet>
-        <title>Sản phẩm — ModelCraft</title>
-        <meta name="description" content="Lọc" />
+        <title>Sản phẩm — BÁO LỐP</title>
+        <meta name="description" content="Lọc và tìm mô hình, sa bàn, xe die-cast 1:64 và 1:32 theo loại và mức giá." />
       </Helmet>
 
-      <div className="mx-auto max-w-[90rem] px-6 py-10">
-        <h1 className="font-display text-4xl font-bold">Cửa hàng</h1>
+      <div className="mx-auto max-w-[90rem] px-4 py-8 sm:px-6 sm:py-10">
+        <h1 className="font-display text-3xl font-bold sm:text-4xl">Cửa hàng</h1>
         <p className="mt-2 text-muted-foreground">
           {q ? `Kết quả cho "${q}" — ` : ''}{loading ? 'Đang tải...' : `${filtered.length} sản phẩm`}
         </p>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
-          <aside className="h-fit rounded-lg border border-border bg-card p-5 lg:sticky lg:top-24">
+        <div className="mt-6 grid gap-6 sm:mt-8 sm:gap-8 lg:grid-cols-[240px_1fr]">
+          <aside className="h-fit rounded-lg border border-border bg-card p-4 sm:p-5 lg:sticky lg:top-24">
             <div className="mb-4 flex items-center gap-2 font-display font-semibold">
               <SlidersHorizontal className="h-4 w-4 text-primary" /> Bộ lọc
             </div>
+
             <div className="mb-6">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Kích thước / Loại</p>
-              <div className="flex flex-col gap-1.5">
-                {SIZES.map((s) => (
-                  <button key={s.key} onClick={() => setSize(s.key)}
-                    className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${size === s.key ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-secondary'}`}>
-                    {s.label}
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Phân loại</p>
+              <div className="flex flex-wrap gap-1.5 lg:flex-col">
+                {CATEGORIES.map((c) => (
+                  <button
+                    key={c.key}
+                    onClick={() => setCategory(c.key)}
+                    className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${category === c.key ? 'bg-primary text-primary-foreground font-semibold' : 'bg-secondary/60 hover:bg-secondary lg:bg-transparent'}`}
+                  >
+                    {c.label}
                   </button>
                 ))}
               </div>
             </div>
+
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mức giá</p>
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-wrap gap-1.5 lg:flex-col">
                 {PRICES.map((s) => (
-                  <button key={s.key} onClick={() => setPrice(s.key)}
-                    className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${price === s.key ? 'bg-primary text-primary-foreground font-semibold' : 'hover:bg-secondary'}`}>
+                  <button
+                    key={s.key}
+                    onClick={() => setPrice(s.key)}
+                    className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${price === s.key ? 'bg-primary text-primary-foreground font-semibold' : 'bg-secondary/60 hover:bg-secondary lg:bg-transparent'}`}
+                  >
                     {s.label}
                   </button>
                 ))}
               </div>
             </div>
-            {(size !== 'all' || price !== 'all' || q) && (
-              <Button variant="outline" className="mt-5 w-full" onClick={() => { setSize('all'); setPrice('all'); setParams({}); }}>
+
+            {(category !== 'all' || price !== 'all' || q) && (
+              <Button variant="outline" className="mt-5 w-full" onClick={clearFilters}>
                 Xóa bộ lọc
               </Button>
             )}
@@ -116,13 +131,13 @@ const StorePage = () => {
 
           <div>
             {loading ? (
-              <div className="flex h-64 items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>
+              <div className="flex h-64 items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary sm:h-12 sm:w-12" /></div>
             ) : filtered.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border py-24 text-center text-muted-foreground">
+              <div className="rounded-lg border border-dashed border-border py-16 text-center text-muted-foreground sm:py-24">
                 Không tìm thấy sản phẩm phù hợp.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
                 {filtered.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
               </div>
             )}

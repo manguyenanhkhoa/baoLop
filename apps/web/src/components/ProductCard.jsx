@@ -46,23 +46,23 @@ const ProductCard = ({ product, index = 0 }) => {
             <img
               src={product.image || placeholderImage}
               alt={product.title}
-              className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-56"
             />
             {product.ribbon_text && (
-              <span className="absolute left-3 top-3 rounded-sm bg-primary px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground">
+              <span className="absolute left-2 top-2 rounded-sm bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-xs">
                 {product.ribbon_text}
               </span>
             )}
           </div>
-          <div className="flex flex-1 flex-col p-4">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">{product.type?.value || 'Mô hình'}</p>
-            <h3 className="mt-1 font-display text-lg font-semibold leading-tight line-clamp-2">{product.title}</h3>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-lg font-bold text-primary">{displayPrice}</span>
-              {originalPrice && <span className="text-sm text-muted-foreground line-through">{originalPrice}</span>}
+          <div className="flex flex-1 flex-col p-3 sm:p-4">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-xs">{product.type?.value || 'Mô hình'}</p>
+            <h3 className="mt-1 font-display text-sm font-semibold leading-tight line-clamp-2 sm:text-lg">{product.title}</h3>
+            <div className="mt-2 flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+              <span className="text-base font-bold text-primary sm:text-lg">{displayPrice}</span>
+              {originalPrice && <span className="text-xs text-muted-foreground line-through sm:text-sm">{originalPrice}</span>}
             </div>
-            <Button onClick={handleAddToCart} className="mt-4 w-full font-semibold">
-              <ShoppingCart className="mr-2 h-4 w-4" /> Thêm vào giỏ
+            <Button onClick={handleAddToCart} className="mt-3 w-full text-xs font-semibold sm:mt-4 sm:text-sm" size="sm">
+              <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" /> Thêm vào giỏ
             </Button>
           </div>
         </div>

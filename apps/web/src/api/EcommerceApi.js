@@ -54,6 +54,7 @@ function mapProduct(row) {
     description: row.description,
     ribbon_text: row.ribbon_text,
     purchasable: row.purchasable,
+    category: row.category ?? '1:64',
     additional_info: row.additional_info ?? [],
     variants,
   };
@@ -113,12 +114,15 @@ export async function getProductQuantities(params = {}) {
 
 // Tạo đơn hàng thật trong Supabase.
 // order: { customerId, customerName, customerPhone, customerAddress,
-//          paymentMethod: 'cod' | 'vnpay' | 'momo', items: [{variant, product, quantity}] }
+//          paymentMethod: 'cod' | 'vnpay' | 'momo', shippingFeeInCents,
+//          items: [{variant, product, quantity}] }
 export async function createOrder(order) {
-  const totalInCents = order.items.reduce(
+  const itemsTotalInCents = order.items.reduce(
     (sum, item) => sum + (item.variant.sale_price_in_cents ?? item.variant.price_in_cents) * item.quantity,
     0
   );
+  const shippingFeeInCents = order.shippingFeeInCents ?? 0;
+  const totalInCents = itemsTotalInCents + shippingFeeInCents;
 
   const { data: newOrder, error: orderError } = await supabase
     .from('orders')
@@ -130,6 +134,7 @@ export async function createOrder(order) {
       payment_method: order.paymentMethod,
       payment_status: 'pending',
       status: 'processing',
+      shipping_fee_in_cents: shippingFeeInCents,
       total_in_cents: totalInCents,
     })
     .select()

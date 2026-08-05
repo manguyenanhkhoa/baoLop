@@ -84,7 +84,14 @@ const AdminOrdersPage = () => {
                     <div key={it.id}>{it.product_title} ({it.variant_title}) × {it.quantity}</div>
                   ))}
                 </TableCell>
-                <TableCell className="font-semibold">{formatCurrency(o.total_in_cents, VND_CURRENCY)}</TableCell>
+                <TableCell className="font-semibold">
+                  {formatCurrency(o.total_in_cents, VND_CURRENCY)}
+                  {o.shipping_fee_in_cents > 0 && (
+                    <p className="mt-0.5 text-xs font-normal text-muted-foreground">
+                      (gồm ship {formatCurrency(o.shipping_fee_in_cents, VND_CURRENCY)})
+                    </p>
+                  )}
+                </TableCell>
                 <TableCell>
                   <Badge variant={o.payment_status === 'paid' ? 'default' : 'secondary'}>
                     {PAYMENT_LABEL[o.payment_method] ?? o.payment_method} · {PAYMENT_STATUS_LABEL[o.payment_status] ?? o.payment_status}
