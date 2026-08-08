@@ -101,14 +101,14 @@ const Layout = () => {
     BÁO LỐP
   </span>
 </Link>
-            <p className="mt-3 text-sm text-muted-foreground">Chuyên mô hình, sa bàn và xe die-cast tỉ lệ 1:64, 1:34 chính hãng, chất lượng cao.</p>
+            <p className="mt-3 text-sm text-muted-foreground">Chuyên mô hình, Diorama và xe die-cast chính hãng, chất lượng.</p>
           </div>
           <div>
             <h4 className="font-display font-semibold">Danh mục</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><Link to="/store" className="hover:text-primary">Xe 1:64</Link></li>
-              <li><Link to="/store" className="hover:text-primary">Xe 1:34</Link></li>
-              <li><Link to="/store" className="hover:text-primary">Sa bàn</Link></li>
+              <li><Link to="/store" className="hover:text-primary">Diorama</Link></li>
+              <li><Link to="/store" className="hover:text-primary">Khác</Link></li>
             </ul>
           </div>
           <div>

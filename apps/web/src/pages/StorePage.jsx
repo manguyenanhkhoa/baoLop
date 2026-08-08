@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 const CATEGORIES = [
   { key: 'all', label: 'Tất cả' },
   { key: '1:64', label: 'Xe 1:64' },
-  { key: '1:32', label: 'Xe 1:32' },
+  { key: 'Khác', label: 'Khác' },
   { key: 'diorama', label: 'Sa bàn / Diorama' },
 ];
 

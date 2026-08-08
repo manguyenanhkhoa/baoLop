@@ -39,7 +39,7 @@ const HomePage = () => {
     <>
       <Helmet>
         <title>Báo Lốp - Mô Hình Xe</title>
-        <meta name="description" content="Cửa hàng mô hình, sa bàn và xe die-cast tỉ lệ 1:64, 1:34. " />
+        <meta name="description" content="Cửa hàng xe die-cast và diorama. " />
       </Helmet>
 
       <section className="relative flex min-h-[70vh] items-center sm:min-h-[82vh]">
@@ -49,10 +49,10 @@ const HomePage = () => {
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-2xl">
             <span className="inline-block rounded-full border border-primary/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary sm:px-4 sm:text-xs">Bộ sưu tập chính hãng</span>
             <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] sm:mt-5 sm:text-6xl sm:leading-[1.05] md:text-7xl">
-              Thế giới <span className="text-primary">mô hình</span> & sa bàn tỉ lệ
+              Thế giới <span className="text-primary">mô hình</span> & diorama
             </h1>
             <p className="mt-4 max-w-xl text-base text-foreground/80 sm:mt-5 sm:text-lg">
-              Xe die-cast 1:64, 1:32, sa bàn tiểu cảnh thủ công và hàng ngàn phụ kiện cho người sưu tầm. Chất lượng cao, giao hàng toàn quốc.
+              Xe die-cast 1:64, diorama tiểu cảnh thủ công và nhiều phụ kiện cho người sưu tầm. Chất lượng, giao hàng toàn quốc.
             </p>
             <div className="mt-6 flex flex-wrap gap-3 sm:mt-8 sm:gap-4">
               <Button asChild size="lg" className="font-semibold">
