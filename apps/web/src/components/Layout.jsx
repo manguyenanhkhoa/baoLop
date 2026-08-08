@@ -115,7 +115,7 @@ const Layout = () => {
             <h4 className="font-display font-semibold">Hỗ trợ</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>Chính sách vận chuyển</li>
-              <li>Đổi trả &amp; bảo hành</li>
+              <li>Bảo hành</li>
               <li>Hướng dẫn đặt hàng</li>
             </ul>
           </div>

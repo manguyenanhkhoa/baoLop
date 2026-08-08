@@ -47,7 +47,7 @@ const HomePage = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
         <div className="relative mx-auto w-full max-w-[90rem] px-4 sm:px-6">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-2xl">
-            <span className="inline-block rounded-full border border-primary/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary sm:px-4 sm:text-xs">Bộ sưu tập chính hãng</span>
+            <span className="inline-block rounded-full border border-primary/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-primary sm:px-4 sm:text-xs">Đứa con tâm huyết của Sombre Licorne</span>
             <h1 className="mt-4 font-display text-4xl font-bold leading-[1.1] sm:mt-5 sm:text-6xl sm:leading-[1.05] md:text-7xl">
               Thế giới <span className="text-primary">mô hình</span> & diorama
             </h1>
@@ -70,7 +70,7 @@ const HomePage = () => {
         <div className="mx-auto grid max-w-[90rem] gap-5 px-4 py-6 sm:grid-cols-3 sm:gap-6 sm:px-6 sm:py-8">
           {[
             { icon: Truck, t: 'Giao hàng toàn quốc', d: 'Đóng gói chống sốc cẩn thận' },
-            { icon: ShieldCheck, t: 'Cam kết chính hãng', d: 'Đổi trả trong 7 ngày' },
+            { icon: ShieldCheck, t: 'Cam kết chính hãng', d: 'Bảo từ 7 ngày' },
             { icon: Award, t: 'Chất lượng sưu tầm', d: 'Chi tiết sắc nét, tỉ lệ chuẩn' },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t} className="flex items-center gap-3 sm:gap-4">
