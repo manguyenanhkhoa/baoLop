@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Loader2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, X, Upload, ImageIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { formatCurrency, VND_CURRENCY } from '@/api/EcommerceApi';
+import { uploadProductImage } from '@/lib/uploadImage';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,8 @@ const AdminProductsPage = () => {
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingVariantKey, setUploadingVariantKey] = useState(null);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -116,6 +119,40 @@ const AdminProductsPage = () => {
     ...f,
     variants: f.variants.filter((v) => v._key !== key),
   }));
+
+  const handleMainImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // cho phép chọn lại cùng 1 file lần sau
+    if (!file) return;
+
+    setUploadingMain(true);
+    try {
+      const url = await uploadProductImage(file);
+      setForm((f) => ({ ...f, image: url }));
+      toast({ title: 'Tải ảnh lên thành công' });
+    } catch (error) {
+      toast({ title: 'Tải ảnh thất bại', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingMain(false);
+    }
+  };
+
+  const handleVariantImageUpload = async (key, e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setUploadingVariantKey(key);
+    try {
+      const url = await uploadProductImage(file);
+      updateVariant(key, 'image_url', url);
+      toast({ title: 'Tải ảnh lên thành công' });
+    } catch (error) {
+      toast({ title: 'Tải ảnh thất bại', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingVariantKey(null);
+    }
+  };
 
   const onSave = async (e) => {
     e.preventDefault();
@@ -268,8 +305,24 @@ const AdminProductsPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>URL ảnh chính</Label>
-                <Input value={form.image} onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))} placeholder="https://..." />
+                <Label>Ảnh chính</Label>
+                <div className="flex items-center gap-3">
+                  {form.image ? (
+                    <img src={form.image} alt="" className="h-16 w-16 shrink-0 rounded-md border border-border object-cover" />
+                  ) : (
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-1.5">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:border-primary">
+                      {uploadingMain ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      {uploadingMain ? 'Đang tải lên...' : 'Tải ảnh từ máy'}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleMainImageUpload} disabled={uploadingMain} />
+                    </label>
+                    <Input value={form.image} onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))} placeholder="hoặc dán URL ảnh" className="text-xs" />
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Nhãn (VD: Mới về, Bán chạy)</Label>
@@ -301,7 +354,13 @@ const AdminProductsPage = () => {
                     <Input className="col-span-2" type="number" placeholder="Giá (đ)" required value={v.price_in_cents} onChange={(e) => updateVariant(v._key, 'price_in_cents', e.target.value)} />
                     <Input className="col-span-2" type="number" placeholder="Giá SALE" value={v.sale_price_in_cents} onChange={(e) => updateVariant(v._key, 'sale_price_in_cents', e.target.value)} />
                     <Input className="col-span-2" type="number" placeholder="Tồn kho" required value={v.inventory_quantity} onChange={(e) => updateVariant(v._key, 'inventory_quantity', e.target.value)} />
-                    <Input className="col-span-2" placeholder="URL ảnh riêng" value={v.image_url} onChange={(e) => updateVariant(v._key, 'image_url', e.target.value)} />
+                    <div className="col-span-2 flex items-center gap-1">
+                      <Input placeholder="URL ảnh riêng" value={v.image_url} onChange={(e) => updateVariant(v._key, 'image_url', e.target.value)} className="text-xs" />
+                      <label className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border hover:border-primary" title="Tải ảnh từ máy">
+                        {uploadingVariantKey === v._key ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleVariantImageUpload(v._key, e)} disabled={uploadingVariantKey === v._key} />
+                      </label>
+                    </div>
                     <Button type="button" size="icon" variant="ghost" className="col-span-1 text-destructive" onClick={() => removeVariant(v._key)} disabled={form.variants.length === 1}>
                       <X className="h-4 w-4" />
                     </Button>
