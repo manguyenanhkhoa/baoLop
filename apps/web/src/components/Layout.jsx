@@ -1,43 +1,109 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { ShoppingCart as CartIcon, Search, Boxes, User, LayoutDashboard } from 'lucide-react';
+import { Link, NavLink, useNavigate, Outlet } from 'react-router-dom';
+import { ShoppingCart as CartIcon, Search, User, LayoutDashboard, Menu, LogOut } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import ShoppingCart from '@/components/ShoppingCart';
-const navClass = ({
-  isActive
-}) => `text-sm font-medium uppercase tracking-wide transition-colors ${isActive ? 'text-primary' : 'text-foreground/80 hover:text-primary'}`;
+import WelcomeBanner from '@/components/WelcomeBanner';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+
+const navClass = ({ isActive }) =>
+  `text-sm font-medium uppercase tracking-wide transition-colors ${isActive ? 'text-primary' : 'text-foreground/80 hover:text-primary'}`;
+
+const mobileNavClass = ({ isActive }) =>
+  `rounded-md px-3 py-2.5 text-base font-medium transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground/90 hover:bg-secondary'}`;
+
+const Logo = () => (
+  <Link to="/" className="flex shrink-0 items-center gap-2">
+    <img src="/baoLop_white.ico" alt="Báo Lốp" className="h-8 w-8 object-contain" />
+    <span className="font-display text-lg font-bold tracking-tight sm:text-xl">BÁO LỐP</span>
+  </Link>
+);
+
 const Layout = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const {
-    cartItems
-  } = useCart();
+  const { cartItems } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const count = cartItems.reduce((n, i) => n + i.quantity, 0);
-  const onSearch = e => {
+
+  const onSearch = (e) => {
     e.preventDefault();
     navigate(`/store?q=${encodeURIComponent(query.trim())}`);
+    setIsMenuOpen(false);
   };
-  return <div className="flex min-h-screen flex-col">
+
+  return (
+    <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[90rem] items-center gap-4 px-4 py-3 sm:px-6">
-          {/* <Link to="/" className="flex items-center gap-2 shrink-0"><Boxes className="h-7 w-7 text-primary" /><span className="font-display text-xl font-bold tracking-tight">BÁO LỐP</span></Link> */}
-<Link to="/" className="flex items-center gap-2 shrink-0">
-  <img
-    src="/baoLop_white.ico"
-    alt="Báo Lốp"
-    className="h-8 w-8 object-contain"
-  />
-  <span className="font-display text-xl font-bold tracking-tight">
-    BÁO LỐP
-  </span>
-</Link>
+        <div className="mx-auto flex max-w-[90rem] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6">
+          {/* Nút menu mobile */}
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <SheetTrigger asChild>
+              <button className="shrink-0 rounded-md p-2 hover:bg-secondary lg:hidden" aria-label="Mở menu">
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[85vw] max-w-sm">
+              <SheetHeader>
+                <SheetTitle className="text-left"><Logo /></SheetTitle>
+              </SheetHeader>
+
+              <form onSubmit={onSearch} className="relative mt-4">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm sản phẩm..."
+                  className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary"
+                />
+              </form>
+
+              <nav className="mt-6 flex flex-col gap-1">
+                <SheetClose asChild>
+                  <NavLink to="/" className={mobileNavClass} end>Trang chủ</NavLink>
+                </SheetClose>
+                <SheetClose asChild>
+                  <NavLink to="/store" className={mobileNavClass}>Sản phẩm</NavLink>
+                </SheetClose>
+                {isAdmin && (
+                  <SheetClose asChild>
+                    <NavLink to="/admin" className={mobileNavClass}>
+                      <span className="flex items-center gap-2"><LayoutDashboard className="h-4 w-4" />Quản trị</span>
+                    </NavLink>
+                  </SheetClose>
+                )}
+              </nav>
+
+              <div className="mt-6 border-t border-border pt-4">
+                {user ? (
+                  <SheetClose asChild>
+                    <button onClick={signOut} className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-base font-medium text-destructive hover:bg-secondary">
+                      <LogOut className="h-4 w-4" />
+                      Đăng xuất {profile?.full_name ? `(${profile.full_name})` : ''}
+                    </button>
+                  </SheetClose>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <SheetClose asChild>
+                      <Link to="/login" className="rounded-md bg-primary px-3 py-2.5 text-center text-base font-semibold text-primary-foreground">Đăng nhập</Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link to="/register" className="rounded-md border border-border px-3 py-2.5 text-center text-base font-medium">Tạo tài khoản</Link>
+                    </SheetClose>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Logo />
+
           <form onSubmit={onSearch} className="relative hidden flex-1 md:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm kiếm" className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm mô hình, sa bàn, xe 1:64, 1:32..." className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary" />
           </form>
 
           <nav className="ml-auto hidden items-center gap-6 lg:flex">
@@ -46,69 +112,57 @@ const Layout = () => {
           </nav>
 
           {isAdmin && (
-            <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary sm:flex">
+            <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
               <LayoutDashboard className="h-4 w-4" />
               Quản trị
             </Link>
           )}
 
           {user ? (
-            <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary sm:flex" title={profile?.full_name}>
+            <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex" title={profile?.full_name}>
               <User className="h-4 w-4" />
               Đăng xuất
             </button>
           ) : (
-            <Link to="/login" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary sm:flex">
+            <Link to="/login" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
               <User className="h-4 w-4" />
               Đăng nhập
             </Link>
           )}
 
-          <button onClick={() => setIsCartOpen(true)} className="relative ml-2 rounded-full border border-border p-2 hover:border-primary" aria-label="Giỏ hàng">
+          <button onClick={() => setIsCartOpen(true)} className="relative ml-auto rounded-full border border-border p-2 hover:border-primary lg:ml-2" aria-label="Giỏ hàng">
             <CartIcon className="h-5 w-5" />
-            {count > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">
                 {count}
-              </span>}
+              </span>
+            )}
           </button>
         </div>
 
         <form onSubmit={onSearch} className="relative px-4 pb-3 md:hidden">
           <Search className="pointer-events-none absolute left-7 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm sản phẩm..." className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm sản phẩm..." className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary" />
         </form>
       </header>
 
       <main className="flex-1">
-        <Outlet context={{
-        openCart: () => setIsCartOpen(true)
-      }} />
+        <WelcomeBanner />
+        <Outlet context={{ openCart: () => setIsCartOpen(true) }} />
       </main>
 
       <footer className="border-t border-border bg-card">
         <div className="mx-auto grid max-w-[90rem] gap-8 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            {/* <div className="flex items-center gap-2">
-              <Boxes className="h-6 w-6 text-primary" />
-              <span className="font-display text-lg font-bold">BÁO LỐP</span>
-            </div> */}
-            <Link to="/" className="flex items-center gap-2 shrink-0">
-  <img
-    src="/baoLop_white.ico"
-    alt="Báo Lốp"
-    className="h-8 w-8 object-contain"
-  />
-  <span className="font-display text-xl font-bold tracking-tight">
-    BÁO LỐP
-  </span>
-</Link>
+            <Logo />
             <p className="mt-3 text-sm text-muted-foreground">Chuyên mô hình, Diorama và xe die-cast chính hãng, chất lượng.</p>
           </div>
           <div>
             <h4 className="font-display font-semibold">Danh mục</h4>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/store" className="hover:text-primary">Xe 1:64</Link></li>
-              <li><Link to="/store" className="hover:text-primary">Diorama</Link></li>
-              <li><Link to="/store" className="hover:text-primary">Khác</Link></li>
+              <li><Link to="/store?category=1:64" className="hover:text-primary">Xe 1:64</Link></li>
+              <li><Link to="/store?category=1:32" className="hover:text-primary">Khác</Link></li>
+              <li><Link to="/store?category=diorama" className="hover:text-primary">Diorama</Link></li>
             </ul>
           </div>
           <div>
@@ -134,6 +188,8 @@ const Layout = () => {
       </footer>
 
       <ShoppingCart isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />
-    </div>;
+    </div>
+  );
 };
+
 export default Layout;
