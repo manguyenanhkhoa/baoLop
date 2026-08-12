@@ -15,7 +15,7 @@ const mobileNavClass = ({ isActive }) =>
 
 const Logo = () => (
   <Link to="/" className="flex shrink-0 items-center gap-2">
-    <img src="/baoLop_white.ico" alt="Báo Lốp" className="h-8 w-8 object-contain" />
+    <img src="/baoLop.ico" alt="Báo Lốp" className="h-8 w-8 object-contain" />
     <span className="font-display text-lg font-bold tracking-tight sm:text-xl">BÁO LỐP</span>
   </Link>
 );
