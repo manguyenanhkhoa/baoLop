@@ -1,16 +1,18 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, Truck, Landmark, Wallet, MapPin, MapPinned } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2, Truck, Landmark, Wallet, MapPinned } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 import { createOrder, formatCurrency, VND_CURRENCY } from '@/api/EcommerceApi';
+import { isHoChiMinhCity } from '@/lib/vnAddress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import MapPicker from '@/components/MapPicker';
+import AddressPicker from '@/components/AddressPicker';
 
 const PAYMENT_METHODS = [
   { id: 'cod', label: 'Thanh toán khi nhận hàng (COD)', icon: Truck },
@@ -18,32 +20,52 @@ const PAYMENT_METHODS = [
   { id: 'momo', label: 'Ví Momo (sắp ra mắt)', icon: Wallet, disabled: true },
 ];
 
-const SHIPPING_OPTIONS = [
-  { id: 'hcm', label: 'Nội thành TP. Hồ Chí Minh', fee: 20000 },
-  { id: 'nationwide', label: 'Toàn quốc (ngoài TP.HCM)', fee: 30000 },
-];
+const FEE_HCM = 20000;
+const FEE_NATIONWIDE = 30000;
 
 const CheckoutPage = () => {
   const { cartItems, clearCart } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const [customerName, setCustomerName] = useState(profile?.full_name ?? '');
   const [customerPhone, setCustomerPhone] = useState(profile?.phone ?? '');
-  const [customerAddress, setCustomerAddress] = useState('');
+  const [addressData, setAddressData] = useState(null); // { city, district, ward, streetAddress, saveNew, existingId? }
   const [location, setLocation] = useState(null); // {lat, lng}
   const [mapOpen, setMapOpen] = useState(false);
-  const [shippingArea, setShippingArea] = useState('hcm');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (profile?.full_name) setCustomerName(profile.full_name);
+    if (profile?.phone) setCustomerPhone(profile.phone);
+  }, [profile]);
 
   const subtotalInCents = useMemo(
     () => cartItems.reduce((sum, item) => sum + (item.variant.sale_price_in_cents ?? item.variant.price_in_cents) * item.quantity, 0),
     [cartItems]
   );
-  const shippingFeeInCents = SHIPPING_OPTIONS.find((s) => s.id === shippingArea)?.fee ?? 0;
+  const shippingFeeInCents = addressData ? (isHoChiMinhCity(addressData.city) ? FEE_HCM : FEE_NATIONWIDE) : 0;
   const totalInCents = subtotalInCents + shippingFeeInCents;
+
+  // Bắt buộc đăng nhập mới được đặt hàng
+  if (!authLoading && !user) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-24 text-center">
+        <h1 className="font-display text-2xl font-bold">Cần đăng nhập để đặt hàng</h1>
+        <p className="mt-2 text-muted-foreground">Đăng nhập hoặc tạo tài khoản để tiếp tục thanh toán và theo dõi đơn hàng của bạn.</p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button asChild><Link to="/login" state={{ from: '/checkout' }}>Đăng nhập</Link></Button>
+          <Button asChild variant="outline"><Link to="/register">Tạo tài khoản</Link></Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (authLoading) {
+    return <div className="flex min-h-[50vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -57,14 +79,21 @@ const CheckoutPage = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (!addressData) {
+      toast({ title: 'Chưa chọn địa chỉ giao hàng', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
 
     try {
+      const fullAddress = `${addressData.streetAddress}, ${addressData.ward}, ${addressData.district}, ${addressData.city}`;
+
       const { order } = await createOrder({
-        customerId: user?.id ?? null,
+        customerId: user.id,
         customerName,
         customerPhone,
-        customerAddress,
+        customerAddress: fullAddress,
         latitude: location?.lat ?? null,
         longitude: location?.lng ?? null,
         paymentMethod,
@@ -72,14 +101,20 @@ const CheckoutPage = () => {
         items: cartItems,
       });
 
+      if (addressData.saveNew) {
+        await supabase.from('customer_addresses').insert({
+          customer_id: user.id,
+          city: addressData.city,
+          district: addressData.district,
+          ward: addressData.ward,
+          street_address: addressData.streetAddress,
+        });
+      }
+
       clearCart();
 
       navigate('/success', {
-        state: {
-          orderId: order.id,
-          totalInCents,
-          paymentMethod,
-        },
+        state: { orderId: order.id, totalInCents, paymentMethod },
       });
     } catch (error) {
       toast({
@@ -101,7 +136,7 @@ const CheckoutPage = () => {
         <div className="mt-6 grid gap-6 sm:mt-8 sm:gap-8 lg:grid-cols-5">
           <form onSubmit={onSubmit} className="space-y-6 lg:col-span-3">
             <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-              <h2 className="font-display text-lg font-semibold">Thông tin giao hàng</h2>
+              <h2 className="font-display text-lg font-semibold">Thông tin người nhận</h2>
               <div className="mt-4 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="customerName">Họ và tên</Label>
@@ -111,51 +146,27 @@ const CheckoutPage = () => {
                   <Label htmlFor="customerPhone">Số điện thoại</Label>
                   <Input id="customerPhone" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="09xxxxxxxx" />
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="customerAddress">Địa chỉ giao hàng</Label>
-                    <button type="button" onClick={() => setMapOpen(true)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                      <MapPinned className="h-3.5 w-3.5" /> Chọn trên bản đồ
-                    </button>
-                  </div>
-                  <Textarea id="customerAddress" required value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" rows={3} />
-                  {location && <p className="text-xs text-muted-foreground">📍 Đã ghim vị trí trên bản đồ.</p>}
-                </div>
               </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold">Địa chỉ giao hàng</h2>
+                <button type="button" onClick={() => setMapOpen(true)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                  <MapPinned className="h-3.5 w-3.5" /> Ghim vị trí trên bản đồ
+                </button>
+              </div>
+              <div className="mt-4">
+                <AddressPicker userId={user.id} onChange={setAddressData} />
+              </div>
+              {location && <p className="mt-2 text-xs text-muted-foreground">📍 Đã ghim vị trí chính xác trên bản đồ.</p>}
             </div>
 
             <MapPicker
               open={mapOpen}
               onOpenChange={setMapOpen}
-              onConfirm={({ lat, lng, address }) => {
-                setLocation({ lat, lng });
-                if (address) setCustomerAddress(address);
-              }}
+              onConfirm={({ lat, lng }) => setLocation({ lat, lng })}
             />
-
-            <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-              <h2 className="font-display text-lg font-semibold">Khu vực giao hàng</h2>
-              <div className="mt-4 space-y-2">
-                {SHIPPING_OPTIONS.map((s) => (
-                  <label
-                    key={s.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors ${shippingArea === s.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
-                  >
-                    <input
-                      type="radio"
-                      name="shippingArea"
-                      value={s.id}
-                      checked={shippingArea === s.id}
-                      onChange={() => setShippingArea(s.id)}
-                      className="accent-primary"
-                    />
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1 text-sm font-medium">{s.label}</span>
-                    <span className="text-sm font-semibold text-primary">{formatCurrency(s.fee, VND_CURRENCY)}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
 
             <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-lg font-semibold">Phương thức thanh toán</h2>
@@ -186,7 +197,7 @@ const CheckoutPage = () => {
               )}
             </div>
 
-            <Button type="submit" disabled={submitting} className="w-full py-3 text-base">
+            <Button type="submit" disabled={submitting || !addressData} className="w-full py-3 text-base">
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Đặt hàng
             </Button>
@@ -212,8 +223,8 @@ const CheckoutPage = () => {
                 <span>{formatCurrency(subtotalInCents, VND_CURRENCY)}</span>
               </div>
               <div className="flex items-center justify-between text-muted-foreground">
-                <span>Phí vận chuyển</span>
-                <span>{formatCurrency(shippingFeeInCents, VND_CURRENCY)}</span>
+                <span>Phí vận chuyển{!addressData && ' (chọn địa chỉ để tính)'}</span>
+                <span>{addressData ? formatCurrency(shippingFeeInCents, VND_CURRENCY) : '—'}</span>
               </div>
               <div className="flex items-center justify-between border-t border-border pt-2 font-medium text-foreground">
                 <span>Tổng cộng</span>

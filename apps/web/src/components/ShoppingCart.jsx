@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart as ShoppingCartIcon, X } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 const ShoppingCart = ({ isCartOpen, setIsCartOpen }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
 
   const handleCheckout = useCallback(() => {
@@ -22,8 +24,15 @@ const ShoppingCart = ({ isCartOpen, setIsCartOpen }) => {
     }
 
     setIsCartOpen(false);
+
+    if (!user) {
+      toast({ title: 'Cần đăng nhập để đặt hàng', description: 'Đăng nhập hoặc tạo tài khoản để tiếp tục.' });
+      navigate('/login', { state: { from: '/checkout' } });
+      return;
+    }
+
     navigate('/checkout');
-  }, [cartItems, navigate, setIsCartOpen, toast]);
+  }, [cartItems, navigate, setIsCartOpen, toast, user]);
 
   return (
     <AnimatePresence>
