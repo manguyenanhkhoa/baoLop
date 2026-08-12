@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Truck, Landmark, Wallet, MapPin } from 'lucide-react';
+import { Loader2, Truck, Landmark, Wallet, MapPin, MapPinned } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import MapPicker from '@/components/MapPicker';
 
 const PAYMENT_METHODS = [
   { id: 'cod', label: 'Thanh toán khi nhận hàng (COD)', icon: Truck },
@@ -31,6 +32,8 @@ const CheckoutPage = () => {
   const [customerName, setCustomerName] = useState(profile?.full_name ?? '');
   const [customerPhone, setCustomerPhone] = useState(profile?.phone ?? '');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [location, setLocation] = useState(null); // {lat, lng}
+  const [mapOpen, setMapOpen] = useState(false);
   const [shippingArea, setShippingArea] = useState('hcm');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [submitting, setSubmitting] = useState(false);
@@ -62,6 +65,8 @@ const CheckoutPage = () => {
         customerName,
         customerPhone,
         customerAddress,
+        latitude: location?.lat ?? null,
+        longitude: location?.lng ?? null,
         paymentMethod,
         shippingFeeInCents,
         items: cartItems,
@@ -107,11 +112,26 @@ const CheckoutPage = () => {
                   <Input id="customerPhone" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="09xxxxxxxx" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="customerAddress">Địa chỉ giao hàng</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="customerAddress">Địa chỉ giao hàng</Label>
+                    <button type="button" onClick={() => setMapOpen(true)} className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                      <MapPinned className="h-3.5 w-3.5" /> Chọn trên bản đồ
+                    </button>
+                  </div>
                   <Textarea id="customerAddress" required value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" rows={3} />
+                  {location && <p className="text-xs text-muted-foreground">📍 Đã ghim vị trí trên bản đồ.</p>}
                 </div>
               </div>
             </div>
+
+            <MapPicker
+              open={mapOpen}
+              onOpenChange={setMapOpen}
+              onConfirm={({ lat, lng, address }) => {
+                setLocation({ lat, lng });
+                if (address) setCustomerAddress(address);
+              }}
+            />
 
             <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-lg font-semibold">Khu vực giao hàng</h2>

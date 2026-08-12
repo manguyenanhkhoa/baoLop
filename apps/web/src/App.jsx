@@ -13,6 +13,7 @@ import SuccessPage from '@/pages/SuccessPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import CheckoutPage from '@/pages/CheckoutPage';
+import AccountOrdersPage from '@/pages/AccountOrdersPage';
 import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminProductsPage from '@/pages/admin/AdminProductsPage';
 import AdminOrdersPage from '@/pages/admin/AdminOrdersPage';
@@ -30,6 +31,7 @@ function App() {
               <Route path="/store" element={<StorePage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/account/orders" element={<AccountOrdersPage />} />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />

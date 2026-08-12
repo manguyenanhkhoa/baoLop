@@ -45,10 +45,15 @@ const WelcomeBanner = () => {
                 Vào trang Quản trị
               </Link>
             ) : (
-              <Link to="/store" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90">
-                <ShoppingBag className="h-3.5 w-3.5" />
-                Xem sản phẩm
-              </Link>
+              <>
+                <Link to="/store" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90">
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  Xem sản phẩm
+                </Link>
+                <Link to="/account/orders" className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary">
+                  Đơn hàng của tôi
+                </Link>
+              </>
             )}
           </div>
         </div>

@@ -75,6 +75,11 @@ const Layout = () => {
                     </NavLink>
                   </SheetClose>
                 )}
+                {user && !isAdmin && (
+                  <SheetClose asChild>
+                    <NavLink to="/account/orders" className={mobileNavClass}>Đơn hàng của tôi</NavLink>
+                  </SheetClose>
+                )}
               </nav>
 
               <div className="mt-6 border-t border-border pt-4">

@@ -131,9 +131,11 @@ export async function createOrder(order) {
       customer_name: order.customerName,
       customer_phone: order.customerPhone,
       customer_address: order.customerAddress,
+      latitude: order.latitude ?? null,
+      longitude: order.longitude ?? null,
       payment_method: order.paymentMethod,
       payment_status: 'pending',
-      status: 'processing',
+      status: 'pending_confirmation',
       shipping_fee_in_cents: shippingFeeInCents,
       total_in_cents: totalInCents,
     })

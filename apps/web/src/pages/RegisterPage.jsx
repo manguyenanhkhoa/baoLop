@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MailCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 const RegisterPage = () => {
   const { signUp } = useAuth();
@@ -18,6 +19,8 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -57,9 +60,10 @@ const RegisterPage = () => {
 
     toast({
       title: 'Tạo tài khoản thành công 🎉',
-      description: 'Kiểm tra email để xác nhận tài khoản, sau đó quay lại đăng nhập nhé.',
+      description: 'Kiểm tra email để xác nhận tài khoản.',
     });
-    navigate('/login');
+    setRegisteredEmail(email);
+    setShowEmailPopup(true);
   };
 
   return (
@@ -99,6 +103,24 @@ const RegisterPage = () => {
           </Button>
         </form>
       </div>
+
+      <Dialog open={showEmailPopup} onOpenChange={setShowEmailPopup}>
+        <DialogContent className="text-center sm:max-w-sm">
+          <DialogHeader className="items-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <MailCheck className="h-7 w-7 text-primary" />
+            </div>
+            <DialogTitle className="mt-2">Kiểm tra email của bạn</DialogTitle>
+            <DialogDescription>
+              Mình đã gửi link xác nhận tới <span className="font-medium text-foreground">{registeredEmail}</span>.
+              Mở email và bấm vào link xác nhận, sau đó quay lại đăng nhập nhé. (Nhớ kiểm tra cả mục Spam/Quảng cáo nếu chưa thấy.)
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Button onClick={() => { setShowEmailPopup(false); navigate('/login'); }}>Đã hiểu, vào trang đăng nhập</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
