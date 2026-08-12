@@ -12,6 +12,8 @@ import ProductDetailPage from '@/pages/ProductDetailPage';
 import SuccessPage from '@/pages/SuccessPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import AccountOrdersPage from '@/pages/AccountOrdersPage';
 import AdminLayout from '@/pages/admin/AdminLayout';
@@ -35,6 +37,8 @@ function App() {
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
             </Route>
 
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>

@@ -73,7 +73,10 @@ const LoginPage = () => {
             <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ban@email.com" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Mật khẩu</Label>
+              <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">Quên mật khẩu?</Link>
+            </div>
             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
           </div>
           <Button type="submit" disabled={submitting} className="w-full">
