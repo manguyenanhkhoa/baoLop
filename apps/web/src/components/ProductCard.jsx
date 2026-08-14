@@ -18,9 +18,15 @@ const ProductCard = ({ product, index = 0 }) => {
   const displayPrice = hasSale ? variant.sale_price_formatted : variant?.price_formatted;
   const originalPrice = hasSale ? variant.price_formatted : null;
 
+  const isSoldOut = useMemo(
+    () => product.purchasable === false || (product.variants ?? []).every((v) => v.manage_inventory && (v.inventory_quantity ?? 0) <= 0),
+    [product]
+  );
+
   const handleAddToCart = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSoldOut) return;
     if (product.variants.length > 1) {
       navigate(`/product/${product.id}`);
       return;
@@ -31,7 +37,7 @@ const ProductCard = ({ product, index = 0 }) => {
     } catch (error) {
       toast({ variant: 'destructive', title: 'Lỗi', description: error.message });
     }
-  }, [product, variant, addToCart, toast, navigate]);
+  }, [product, variant, addToCart, toast, navigate, isSoldOut]);
 
   return (
     <motion.div
@@ -41,28 +47,34 @@ const ProductCard = ({ product, index = 0 }) => {
       transition={{ duration: 0.45, delay: (index % 8) * 0.04 }}
     >
       <Link to={`/product/${product.id}`} className="block h-full">
-        <div className="group h-full flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-primary/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40">
+        <div className={`group h-full flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 ${isSoldOut ? '' : 'hover:border-primary/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40'}`}>
           <div className="relative overflow-hidden">
             <img
               src={product.image || placeholderImage}
               alt={product.title}
-              className="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-56"
+              className={`h-36 w-full object-cover transition-transform duration-500 sm:h-56 ${isSoldOut ? 'grayscale opacity-50' : 'group-hover:scale-105'}`}
             />
-            {product.ribbon_text && (
+            {isSoldOut ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                <span className="rotate-[-8deg] rounded-sm border-2 border-red-600 bg-background/90 px-3 py-1 text-sm font-black uppercase tracking-widest text-red-600 sm:text-base">
+                  Hết hàng
+                </span>
+              </div>
+            ) : product.ribbon_text && (
               <span className="absolute left-2 top-2 rounded-sm bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-xs">
                 {product.ribbon_text}
               </span>
             )}
           </div>
-          <div className="flex flex-1 flex-col p-3 sm:p-4">
+          <div className={`flex flex-1 flex-col p-3 sm:p-4 ${isSoldOut ? 'opacity-60' : ''}`}>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-xs">{product.type?.value || 'Mô hình'}</p>
             <h3 className="mt-1 font-display text-sm font-semibold leading-tight line-clamp-2 sm:text-lg">{product.title}</h3>
             <div className="mt-2 flex flex-wrap items-baseline gap-1.5 sm:gap-2">
               <span className="text-base font-bold text-primary sm:text-lg">{displayPrice}</span>
               {originalPrice && <span className="text-xs text-muted-foreground line-through sm:text-sm">{originalPrice}</span>}
             </div>
-            <Button onClick={handleAddToCart} className="mt-3 w-full text-xs font-semibold sm:mt-4 sm:text-sm" size="sm">
-              <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" /> Thêm vào giỏ
+            <Button onClick={handleAddToCart} disabled={isSoldOut} className="mt-3 w-full text-xs font-semibold sm:mt-4 sm:text-sm" size="sm">
+              <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" /> {isSoldOut ? 'Hết hàng' : 'Thêm vào giỏ'}
             </Button>
           </div>
         </div>
