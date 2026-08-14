@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate, Outlet } from 'react-router-dom';
-import { ShoppingCart as CartIcon, Search, User, LayoutDashboard, Menu, LogOut } from 'lucide-react';
+import { ShoppingCart as CartIcon, Search, User, LayoutDashboard, Menu, LogOut, Settings, PackageSearch, ChevronDown } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import ShoppingCart from '@/components/ShoppingCart';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 const navClass = ({ isActive }) =>
   `text-sm font-medium uppercase tracking-wide transition-colors ${isActive ? 'text-primary' : 'text-foreground/80 hover:text-primary'}`;
@@ -76,9 +80,14 @@ const Layout = () => {
                   </SheetClose>
                 )}
                 {user && !isAdmin && (
-                  <SheetClose asChild>
-                    <NavLink to="/account" className={mobileNavClass}>Tài khoản của tôi</NavLink>
-                  </SheetClose>
+                  <>
+                    <SheetClose asChild>
+                      <NavLink to="/account" className={mobileNavClass}>Thông tin &amp; địa chỉ</NavLink>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <NavLink to="/account/orders" className={mobileNavClass}>Đơn hàng của tôi</NavLink>
+                    </SheetClose>
+                  </>
                 )}
               </nav>
 
@@ -117,24 +126,47 @@ const Layout = () => {
           </nav>
 
           {isAdmin && (
-            <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
-              <LayoutDashboard className="h-4 w-4" />
-              Quản trị
-            </Link>
+            <>
+              <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
+                <LayoutDashboard className="h-4 w-4" />
+                Quản trị
+              </Link>
+              <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
+                <LogOut className="h-4 w-4" />
+                Đăng xuất
+              </button>
+            </>
           )}
 
           {user && !isAdmin && (
-            <Link to="/account" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
-              <User className="h-4 w-4" />
-              Tài khoản
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="hidden items-center gap-1.5 rounded-full border border-border py-1.5 pl-1.5 pr-3 text-sm font-medium hover:border-primary lg:flex">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {(profile?.full_name || user.email || '?').charAt(0).toUpperCase()}
+                  </span>
+                  <span className="max-w-[120px] truncate">{profile?.full_name || 'Tài khoản'}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate">{profile?.full_name || user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/account"><Settings className="mr-2 h-4 w-4" /> Thông tin &amp; địa chỉ</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/account/orders"><PackageSearch className="mr-2 h-4 w-4" /> Đơn hàng của tôi</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" /> Đăng xuất
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
 
-          {user ? (
-            <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex" title={profile?.full_name}>
-              Đăng xuất
-            </button>
-          ) : (
+          {!user && (
             <Link to="/login" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
               <User className="h-4 w-4" />
               Đăng nhập
