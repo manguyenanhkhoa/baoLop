@@ -156,6 +156,22 @@ export async function createOrder(order) {
   const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
   if (itemsError) throw itemsError;
 
+  // Gọi thẳng Edge Function để báo email cho admin — không chặn luồng đặt
+  // hàng nếu việc gửi email thất bại (khách vẫn đặt hàng thành công bình
+  // thường), chỉ log ra console để dễ debug.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  fetch(`${supabaseUrl}/functions/v1/notify-new-order`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: anonKey,
+      Authorization: `Bearer ${sessionData?.session?.access_token ?? anonKey}`,
+    },
+    body: JSON.stringify({ record: newOrder }),
+  }).catch((err) => console.warn('[EcommerceApi] Gửi email thông báo admin thất bại:', err));
+
   // LƯU Ý: 'vnpay' / 'momo' chưa nối cổng thanh toán thật (chưa có API key).
   // Khi có key, thay đoạn dưới bằng lời gọi 1 serverless function (Vercel
   // API route) để tạo URL thanh toán thật và trả về ở đây.

@@ -50,8 +50,8 @@ const WelcomeBanner = () => {
                   <ShoppingBag className="h-3.5 w-3.5" />
                   Xem sản phẩm
                 </Link>
-                <Link to="/account/orders" className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary">
-                  Đơn hàng của tôi
+                <Link to="/account" className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary">
+                  Tài khoản của tôi
                 </Link>
               </>
             )}

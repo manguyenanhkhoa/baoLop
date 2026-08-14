@@ -77,7 +77,7 @@ const Layout = () => {
                 )}
                 {user && !isAdmin && (
                   <SheetClose asChild>
-                    <NavLink to="/account/orders" className={mobileNavClass}>Đơn hàng của tôi</NavLink>
+                    <NavLink to="/account" className={mobileNavClass}>Tài khoản của tôi</NavLink>
                   </SheetClose>
                 )}
               </nav>
@@ -123,9 +123,15 @@ const Layout = () => {
             </Link>
           )}
 
+          {user && !isAdmin && (
+            <Link to="/account" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex">
+              <User className="h-4 w-4" />
+              Tài khoản
+            </Link>
+          )}
+
           {user ? (
             <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium hover:border-primary lg:flex" title={profile?.full_name}>
-              <User className="h-4 w-4" />
               Đăng xuất
             </button>
           ) : (

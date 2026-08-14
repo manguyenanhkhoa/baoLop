@@ -15,6 +15,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import CheckoutPage from '@/pages/CheckoutPage';
+import AccountPage from '@/pages/AccountPage';
 import AccountOrdersPage from '@/pages/AccountOrdersPage';
 import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminProductsPage from '@/pages/admin/AdminProductsPage';
@@ -33,6 +34,7 @@ function App() {
               <Route path="/store" element={<StorePage />} />
               <Route path="/product/:id" element={<ProductDetailPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/account" element={<AccountPage />} />
               <Route path="/account/orders" element={<AccountOrdersPage />} />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/login" element={<LoginPage />} />
