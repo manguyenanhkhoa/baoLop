@@ -20,6 +20,7 @@ import AccountOrdersPage from '@/pages/AccountOrdersPage';
 import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminProductsPage from '@/pages/admin/AdminProductsPage';
 import AdminOrdersPage from '@/pages/admin/AdminOrdersPage';
+import AdminVouchersPage from '@/pages/admin/AdminVouchersPage';
 import AdminCustomersPage from '@/pages/admin/AdminCustomersPage';
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
               <Route index element={<Navigate to="products" replace />} />
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="orders" element={<AdminOrdersPage />} />
+              <Route path="vouchers" element={<AdminVouchersPage />} />
               <Route path="customers" element={<AdminCustomersPage />} />
             </Route>
           </Routes>

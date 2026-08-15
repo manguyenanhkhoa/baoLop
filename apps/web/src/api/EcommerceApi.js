@@ -122,7 +122,8 @@ export async function createOrder(order) {
     0
   );
   const shippingFeeInCents = order.shippingFeeInCents ?? 0;
-  const totalInCents = itemsTotalInCents + shippingFeeInCents;
+  const discountInCents = order.discountInCents ?? 0;
+  const totalInCents = Math.max(0, itemsTotalInCents + shippingFeeInCents - discountInCents);
 
   const { data: newOrder, error: orderError } = await supabase
     .from('orders')
@@ -137,6 +138,8 @@ export async function createOrder(order) {
       payment_status: 'pending',
       status: 'pending_confirmation',
       shipping_fee_in_cents: shippingFeeInCents,
+      voucher_code: order.voucherCode ?? null,
+      discount_in_cents: discountInCents,
       total_in_cents: totalInCents,
     })
     .select()

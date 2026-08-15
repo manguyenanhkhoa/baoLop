@@ -38,6 +38,30 @@ const OrderRow = ({ order, onUpdate }) => {
     onUpdate(order.id, { status });
   };
 
+  const setPaymentStatus = async (payment_status) => {
+    setSaving(true);
+    const { error } = await supabase.from('orders').update({ payment_status }).eq('id', order.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Cập nhật thất bại', description: error.message, variant: 'destructive' });
+      return;
+    }
+    onUpdate(order.id, { payment_status });
+    toast({ title: 'Đã cập nhật trạng thái thanh toán' });
+  };
+
+  const switchToCod = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('orders').update({ payment_method: 'cod' }).eq('id', order.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Cập nhật thất bại', description: error.message, variant: 'destructive' });
+      return;
+    }
+    onUpdate(order.id, { payment_method: 'cod' });
+    toast({ title: 'Đã chuyển sang thanh toán khi nhận hàng (COD)' });
+  };
+
   const saveShippingInfo = async () => {
     setSaving(true);
     const { error } = await supabase
@@ -75,9 +99,14 @@ const OrderRow = ({ order, onUpdate }) => {
               (gồm ship {formatCurrency(order.shipping_fee_in_cents, VND_CURRENCY)})
             </p>
           )}
+          {order.voucher_code && (
+            <p className="mt-0.5 text-xs font-normal text-primary">
+              Voucher {order.voucher_code} (-{formatCurrency(order.discount_in_cents, VND_CURRENCY)})
+            </p>
+          )}
         </TableCell>
         <TableCell>
-          <Badge variant={order.payment_status === 'paid' ? 'default' : 'secondary'}>
+          <Badge variant={order.payment_status === 'paid' ? 'default' : (order.payment_method !== 'cod' ? 'destructive' : 'secondary')}>
             {PAYMENT_LABEL[order.payment_method] ?? order.payment_method} · {PAYMENT_STATUS_LABEL[order.payment_status] ?? order.payment_status}
           </Badge>
         </TableCell>
@@ -126,7 +155,29 @@ const OrderRow = ({ order, onUpdate }) => {
 
               {!isCancelled && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vận chuyển</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Thanh toán</p>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center" onClick={(e) => e.stopPropagation()}>
+                    <Select value={order.payment_status} onValueChange={setPaymentStatus}>
+                      <SelectTrigger className="sm:w-44"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Chờ thanh toán</SelectItem>
+                        <SelectItem value="paid">Đã thanh toán</SelectItem>
+                        <SelectItem value="failed">Thất bại</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {order.payment_method !== 'cod' && order.payment_status !== 'paid' && (
+                      <Button size="sm" variant="outline" onClick={switchToCod} disabled={saving}>
+                        Chuyển sang thanh toán khi nhận hàng (COD)
+                      </Button>
+                    )}
+                  </div>
+                  {order.payment_method !== 'cod' && order.payment_status === 'pending' && (
+                    <p className="mt-2 text-xs font-medium text-destructive">
+                      ⚠️ Khách chọn {PAYMENT_LABEL[order.payment_method]} nhưng chưa xác nhận thanh toán — kiểm tra tài khoản ngân hàng/ví trước khi đóng gói, hoặc chuyển sang COD nếu khách muốn trả tiền mặt khi nhận hàng.
+                    </p>
+                  )}
+
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vận chuyển</p>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row" onClick={(e) => e.stopPropagation()}>
                     <Select value={shippingProvider} onValueChange={setShippingProvider}>
                       <SelectTrigger className="sm:w-56"><SelectValue placeholder="Nền tảng vận chuyển" /></SelectTrigger>

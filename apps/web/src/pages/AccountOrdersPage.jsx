@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { Loader2, PackageSearch, Truck, MapPin } from 'lucide-react';
+import { Loader2, PackageSearch, Truck, MapPin, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency, VND_CURRENCY } from '@/api/EcommerceApi';
@@ -54,6 +54,13 @@ const OrderCard = ({ order }) => {
 
       <OrderTimeline order={order} />
 
+      {order.payment_method !== 'cod' && order.payment_status !== 'paid' && order.status !== 'cancelled' && (
+        <div className="mt-3 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>Đơn hàng chưa được xác nhận thanh toán. Nếu bạn đã chuyển khoản, shop sẽ sớm cập nhật.</span>
+        </div>
+      )}
+
       {order.shipping_code && (
         <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-secondary/40 px-3 py-2 text-sm">
           <Truck className="h-4 w-4 shrink-0 text-primary" />
@@ -72,6 +79,9 @@ const OrderCard = ({ order }) => {
           <span>Tổng cộng</span>
           <span>{formatCurrency(order.total_in_cents, VND_CURRENCY)}</span>
         </div>
+        {order.voucher_code && (
+          <p className="pt-1 text-xs text-primary">Đã dùng voucher {order.voucher_code} (-{formatCurrency(order.discount_in_cents, VND_CURRENCY)})</p>
+        )}
       </div>
 
       <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">

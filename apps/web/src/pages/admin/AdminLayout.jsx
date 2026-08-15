@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
-import { Package, ShoppingBag, Users, ArrowLeft } from 'lucide-react';
+import { Package, ShoppingBag, Users, ArrowLeft, Ticket } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
   { to: '/admin/products', label: 'Sản phẩm', icon: Package },
   { to: '/admin/orders', label: 'Đơn hàng', icon: ShoppingBag },
+  { to: '/admin/vouchers', label: 'Voucher', icon: Ticket },
   { to: '/admin/customers', label: 'Khách hàng', icon: Users },
 ];
 

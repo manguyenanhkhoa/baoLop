@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Truck, Landmark, Wallet, MapPinned } from 'lucide-react';
+import { Loader2, Truck, Landmark, Wallet, MapPinned, Ticket, X, Check } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,11 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [submitting, setSubmitting] = useState(false);
 
+  const [voucherInput, setVoucherInput] = useState('');
+  const [applyingVoucher, setApplyingVoucher] = useState(false);
+  const [voucher, setVoucher] = useState(null); // { code, discountInCents }
+  const [voucherError, setVoucherError] = useState('');
+
   useEffect(() => {
     if (profile?.full_name) setCustomerName(profile.full_name);
     if (profile?.phone) setCustomerPhone(profile.phone);
@@ -47,7 +52,42 @@ const CheckoutPage = () => {
     [cartItems]
   );
   const shippingFeeInCents = addressData ? (isHoChiMinhCity(addressData.city) ? FEE_HCM : FEE_NATIONWIDE) : 0;
-  const totalInCents = subtotalInCents + shippingFeeInCents;
+  const discountInCents = voucher?.discountInCents ?? 0;
+  const totalInCents = Math.max(0, subtotalInCents + shippingFeeInCents - discountInCents);
+
+  const applyVoucher = async () => {
+    if (!voucherInput.trim()) return;
+    setApplyingVoucher(true);
+    setVoucherError('');
+    try {
+      const productIds = cartItems.map((item) => item.product.id);
+      const { data, error } = await supabase.rpc('apply_voucher', {
+        p_code: voucherInput.trim(),
+        p_subtotal_cents: subtotalInCents,
+        p_product_ids: productIds,
+      });
+      if (error) throw error;
+      const result = data?.[0];
+      if (!result?.valid) {
+        setVoucherError(result?.message ?? 'Mã voucher không hợp lệ.');
+        setVoucher(null);
+        return;
+      }
+      setVoucher({ code: voucherInput.trim().toUpperCase(), discountInCents: result.discount_in_cents });
+      toast({ title: `Đã áp dụng mã ${voucherInput.trim().toUpperCase()}` });
+    } catch (error) {
+      setVoucherError(error.message ?? 'Không kiểm tra được voucher.');
+      setVoucher(null);
+    } finally {
+      setApplyingVoucher(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setVoucher(null);
+    setVoucherInput('');
+    setVoucherError('');
+  };
 
   // Bắt buộc đăng nhập mới được đặt hàng
   if (!authLoading && !user) {
@@ -98,6 +138,8 @@ const CheckoutPage = () => {
         longitude: location?.lng ?? null,
         paymentMethod,
         shippingFeeInCents,
+        voucherCode: voucher?.code ?? null,
+        discountInCents,
         items: cartItems,
       });
 
@@ -169,6 +211,29 @@ const CheckoutPage = () => {
             />
 
             <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Ticket className="h-4 w-4" /> Mã giảm giá</h2>
+              {voucher ? (
+                <div className="mt-3 flex items-center justify-between rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
+                  <span className="flex items-center gap-2 font-medium text-primary"><Check className="h-4 w-4" /> {voucher.code} — giảm {formatCurrency(voucher.discountInCents, VND_CURRENCY)}</span>
+                  <button type="button" onClick={removeVoucher} className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
+                </div>
+              ) : (
+                <div className="mt-3 flex gap-2">
+                  <Input
+                    value={voucherInput}
+                    onChange={(e) => { setVoucherInput(e.target.value); setVoucherError(''); }}
+                    placeholder="Nhập mã voucher"
+                    className="uppercase"
+                  />
+                  <Button type="button" variant="outline" onClick={applyVoucher} disabled={applyingVoucher || !voucherInput.trim()}>
+                    {applyingVoucher ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Áp dụng'}
+                  </Button>
+                </div>
+              )}
+              {voucherError && <p className="mt-2 text-xs text-destructive">{voucherError}</p>}
+            </div>
+
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-lg font-semibold">Phương thức thanh toán</h2>
               <div className="mt-4 space-y-2">
                 {PAYMENT_METHODS.map(({ id, label, icon: Icon, disabled }) => (
@@ -226,6 +291,12 @@ const CheckoutPage = () => {
                 <span>Phí vận chuyển{!addressData && ' (chọn địa chỉ để tính)'}</span>
                 <span>{addressData ? formatCurrency(shippingFeeInCents, VND_CURRENCY) : '—'}</span>
               </div>
+              {discountInCents > 0 && (
+                <div className="flex items-center justify-between text-primary">
+                  <span>Giảm giá ({voucher.code})</span>
+                  <span>-{formatCurrency(discountInCents, VND_CURRENCY)}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between border-t border-border pt-2 font-medium text-foreground">
                 <span>Tổng cộng</span>
                 <span className="text-xl font-bold text-primary">{formatCurrency(totalInCents, VND_CURRENCY)}</span>
