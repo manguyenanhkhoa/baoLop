@@ -18,7 +18,7 @@ const AdminCustomersPage = () => {
 
     const [{ data: profiles, error: profilesError }, { data: orders, error: ordersError }] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-      supabase.from('orders').select('customer_id, total_in_cents, customer_name, customer_phone'),
+      supabase.from('orders').select('customer_id, total_in_cents, customer_name, customer_phone, status'),
     ]);
 
     if (profilesError || ordersError) {
@@ -34,6 +34,7 @@ const AdminCustomersPage = () => {
     const statsByCustomer = new Map();
     for (const o of orders ?? []) {
       if (!o.customer_id) continue;
+      if (o.status === 'cancelled') continue; // đơn đã huỷ không tính vào chi tiêu
       const cur = statsByCustomer.get(o.customer_id) ?? { count: 0, total: 0 };
       cur.count += 1;
       cur.total += o.total_in_cents ?? 0;
