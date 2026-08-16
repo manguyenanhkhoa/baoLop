@@ -65,6 +65,7 @@ const CheckoutPage = () => {
         p_code: voucherInput.trim(),
         p_subtotal_cents: subtotalInCents,
         p_product_ids: productIds,
+        p_customer_id: user.id,
       });
       if (error) throw error;
       const result = data?.[0];

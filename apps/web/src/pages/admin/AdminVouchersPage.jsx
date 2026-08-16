@@ -30,6 +30,7 @@ const emptyForm = () => ({
   product_id: 'all',
   expires_at: '',
   is_active: true,
+  new_customers_only: false,
 });
 
 const AdminVouchersPage = () => {
@@ -70,6 +71,7 @@ const AdminVouchersPage = () => {
       product_id: v.product_id ?? 'all',
       expires_at: v.expires_at ? v.expires_at.slice(0, 10) : '',
       is_active: v.is_active,
+      new_customers_only: v.new_customers_only ?? false,
     });
     setDialogOpen(true);
   };
@@ -85,6 +87,7 @@ const AdminVouchersPage = () => {
       product_id: form.product_id === 'all' ? null : form.product_id,
       expires_at: new Date(`${form.expires_at}T23:59:59`).toISOString(),
       is_active: form.is_active,
+      new_customers_only: form.new_customers_only,
     };
 
     const query = form.id
@@ -124,7 +127,10 @@ const AdminVouchersPage = () => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold">Voucher</h1>
+        <div>
+          <h1 className="font-display text-2xl font-bold">Voucher</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Mỗi khách hàng chỉ dùng được 1 lần cho mỗi mã voucher.</p>
+        </div>
         <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" />Tạo voucher</Button>
       </div>
 
@@ -151,7 +157,10 @@ const AdminVouchersPage = () => {
                 <TableCell className="font-mono font-semibold">{v.code}</TableCell>
                 <TableCell>{v.discount_percent}%</TableCell>
                 <TableCell>{v.min_order_value_cents > 0 ? formatCurrency(v.min_order_value_cents, VND_CURRENCY) : '—'}</TableCell>
-                <TableCell className="text-sm">{v.products?.title ?? 'Toàn bộ đơn hàng'}</TableCell>
+                <TableCell className="text-sm">
+                  {v.products?.title ?? 'Toàn bộ đơn hàng'}
+                  {v.new_customers_only && <Badge variant="outline" className="ml-1.5">Khách mới</Badge>}
+                </TableCell>
                 <TableCell className="text-sm">{new Date(v.expires_at).toLocaleDateString('vi-VN')}</TableCell>
                 <TableCell>
                   {!v.is_active ? <Badge variant="secondary">Tắt</Badge> : isExpired(v) ? <Badge variant="destructive">Hết hạn</Badge> : <Badge>Đang chạy</Badge>}
@@ -203,6 +212,10 @@ const AdminVouchersPage = () => {
             <div className="flex items-center gap-2">
               <Switch checked={form.is_active} onCheckedChange={(v) => setForm((f) => ({ ...f, is_active: v }))} />
               <Label>Đang hoạt động</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={form.new_customers_only} onCheckedChange={(v) => setForm((f) => ({ ...f, new_customers_only: v }))} />
+              <Label>Chỉ dành cho khách hàng mới (chưa từng đặt đơn)</Label>
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>Huỷ</Button>
