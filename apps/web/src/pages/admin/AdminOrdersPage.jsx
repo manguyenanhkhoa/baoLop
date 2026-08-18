@@ -131,11 +131,16 @@ const OrderRow = ({ order, onUpdate }) => {
                 <div className="mt-2 space-y-1 text-sm">
                   {(order.order_items ?? []).map((it) => (
                     <div key={it.id} className="flex justify-between">
-                      <span>{it.product_title} ({it.variant_title}) × {it.quantity}</span>
+                      <span>{it.product_title} ({it.variant_title}) × {it.quantity}{it.is_deposit && <span className="ml-1 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium">Cọc</span>}</span>
                       <span className="text-muted-foreground">{formatCurrency(it.price_in_cents * it.quantity, VND_CURRENCY)}</span>
                     </div>
                   ))}
                 </div>
+                {(order.order_items ?? []).some((it) => it.is_deposit) && (
+                  <p className="mt-2 text-xs font-medium text-foreground">
+                    ⚠️ Còn thu khi giao hàng: {formatCurrency((order.order_items ?? []).reduce((s, it) => s + (it.remaining_amount_cents ?? 0), 0), VND_CURRENCY)}
+                  </p>
+                )}
                 <p className="mt-3 flex items-start gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Địa chỉ giao hàng</p>
                 <p className="mt-1 flex items-start gap-1.5 text-sm">
                   <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />

@@ -55,9 +55,22 @@ function mapProduct(row) {
     ribbon_text: row.ribbon_text,
     purchasable: row.purchasable,
     category: row.category ?? '1:64',
+    requires_deposit: row.requires_deposit ?? false,
+    deposit_amount_cents: row.deposit_amount_cents ?? null,
+    lead_time_text: row.lead_time_text ?? null,
     additional_info: row.additional_info ?? [],
     variants,
   };
+}
+
+// Số tiền phải trả NGAY cho 1 đơn vị sản phẩm (tiền cọc nếu là hàng đặt
+// cọc trước, ngược lại là giá bán bình thường).
+export function getDueNowUnitCents(product, variant) {
+  const fullPrice = variant.sale_price_in_cents ?? variant.price_in_cents;
+  if (product?.requires_deposit && product?.deposit_amount_cents != null) {
+    return Math.min(product.deposit_amount_cents, fullPrice);
+  }
+  return fullPrice;
 }
 
 const PRODUCT_SELECT = '*, product_variants(*)';
@@ -117,10 +130,10 @@ export async function getProductQuantities(params = {}) {
 //          paymentMethod: 'cod' | 'vnpay' | 'momo', shippingFeeInCents,
 //          items: [{variant, product, quantity}] }
 export async function createOrder(order) {
-  const itemsTotalInCents = order.items.reduce(
-    (sum, item) => sum + (item.variant.sale_price_in_cents ?? item.variant.price_in_cents) * item.quantity,
-    0
-  );
+  const itemsTotalInCents = order.items.reduce((sum, item) => {
+    const dueNowUnit = getDueNowUnitCents(item.product, item.variant);
+    return sum + dueNowUnit * item.quantity;
+  }, 0);
   const shippingFeeInCents = order.shippingFeeInCents ?? 0;
   const discountInCents = order.discountInCents ?? 0;
   const totalInCents = Math.max(0, itemsTotalInCents + shippingFeeInCents - discountInCents);
@@ -147,14 +160,21 @@ export async function createOrder(order) {
 
   if (orderError) throw orderError;
 
-  const orderItems = order.items.map((item) => ({
-    order_id: newOrder.id,
-    variant_id: item.variant.id,
-    product_title: item.product.title,
-    variant_title: item.variant.title,
-    quantity: item.quantity,
-    price_in_cents: item.variant.sale_price_in_cents ?? item.variant.price_in_cents,
-  }));
+  const orderItems = order.items.map((item) => {
+    const fullUnitPrice = item.variant.sale_price_in_cents ?? item.variant.price_in_cents;
+    const dueNowUnit = getDueNowUnitCents(item.product, item.variant);
+    const isDeposit = item.product?.requires_deposit && dueNowUnit < fullUnitPrice;
+    return {
+      order_id: newOrder.id,
+      variant_id: item.variant.id,
+      product_title: item.product.title,
+      variant_title: item.variant.title,
+      quantity: item.quantity,
+      price_in_cents: dueNowUnit,
+      is_deposit: isDeposit,
+      remaining_amount_cents: isDeposit ? (fullUnitPrice - dueNowUnit) * item.quantity : 0,
+    };
+  });
 
   const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
   if (itemsError) throw itemsError;

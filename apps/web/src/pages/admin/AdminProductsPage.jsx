@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Loader2, X, Upload, ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, X, Upload, ImageIcon, Clock } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { formatCurrency, VND_CURRENCY } from '@/api/EcommerceApi';
 import { uploadProductImage } from '@/lib/uploadImage';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -47,6 +48,9 @@ const emptyForm = () => ({
   ribbon_text: '',
   category: '1:64',
   purchasable: true,
+  requires_deposit: false,
+  deposit_amount_cents: '',
+  lead_time_text: '',
   variants: [emptyVariant()],
 });
 
@@ -93,6 +97,9 @@ const AdminProductsPage = () => {
       ribbon_text: product.ribbon_text ?? '',
       category: product.category ?? '1:64',
       purchasable: product.purchasable ?? true,
+      requires_deposit: product.requires_deposit ?? false,
+      deposit_amount_cents: product.deposit_amount_cents ?? '',
+      lead_time_text: product.lead_time_text ?? '',
       variants: (product.product_variants ?? []).map((v) => ({
         _key: v.id,
         id: v.id,
@@ -168,6 +175,9 @@ const AdminProductsPage = () => {
         ribbon_text: form.ribbon_text || null,
         category: form.category,
         purchasable: form.purchasable,
+        requires_deposit: form.requires_deposit,
+        deposit_amount_cents: form.requires_deposit ? (Number(form.deposit_amount_cents) || 0) : null,
+        lead_time_text: form.requires_deposit ? (form.lead_time_text || null) : null,
         additional_info: [],
       };
 
@@ -268,6 +278,11 @@ const AdminProductsPage = () => {
                     <div>
                       <p className="font-medium">{p.title}</p>
                       <p className="text-xs text-muted-foreground">{(p.product_variants ?? []).length} biến thể</p>
+                      {p.requires_deposit && (
+                        <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-foreground">
+                          <Clock className="h-3 w-3" /> Cọc {formatCurrency(p.deposit_amount_cents, VND_CURRENCY)} · {p.lead_time_text}
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-sm">{CATEGORY_OPTIONS.find((c) => c.value === p.category)?.label ?? p.category}</TableCell>
@@ -340,6 +355,25 @@ const AdminProductsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="rounded-md border border-border p-3">
+              <div className="flex items-center gap-2">
+                <Switch checked={form.requires_deposit} onCheckedChange={(v) => setForm((f) => ({ ...f, requires_deposit: v }))} />
+                <Label className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Cần đặt cọc trước (hàng chưa có sẵn ngay)</Label>
+              </div>
+              {form.requires_deposit && (
+                <div className="mt-3 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Số tiền cọc (đ)</Label>
+                    <Input type="number" min="0" required={form.requires_deposit} value={form.deposit_amount_cents} onChange={(e) => setForm((f) => ({ ...f, deposit_amount_cents: e.target.value }))} placeholder="VD: 100000" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Thời gian có hàng</Label>
+                    <Input required={form.requires_deposit} value={form.lead_time_text} onChange={(e) => setForm((f) => ({ ...f, lead_time_text: e.target.value }))} placeholder="VD: 7-10 ngày" />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>

@@ -2,9 +2,10 @@ import React, { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Clock } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
+import { formatCurrency, VND_CURRENCY, getDueNowUnitCents } from '@/api/EcommerceApi';
 
 const placeholderImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjMyMDFkIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K";
 
@@ -22,6 +23,9 @@ const ProductCard = ({ product, index = 0 }) => {
     () => product.purchasable === false || (product.variants ?? []).every((v) => v.manage_inventory && (v.inventory_quantity ?? 0) <= 0),
     [product]
   );
+
+  const isDeposit = product.requires_deposit && variant && !isSoldOut;
+  const depositUnitCents = isDeposit ? getDueNowUnitCents(product, variant) : null;
 
   const handleAddToCart = useCallback(async (e) => {
     e.preventDefault();
@@ -60,6 +64,10 @@ const ProductCard = ({ product, index = 0 }) => {
                   Hết hàng
                 </span>
               </div>
+            ) : isDeposit ? (
+              <span className="absolute left-2 top-2 flex items-center gap-1 rounded-sm bg-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-background sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-xs">
+                <Clock className="h-3 w-3" /> Đặt cọc trước
+              </span>
             ) : product.ribbon_text && (
               <span className="absolute left-2 top-2 rounded-sm bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-xs">
                 {product.ribbon_text}
@@ -73,8 +81,13 @@ const ProductCard = ({ product, index = 0 }) => {
               <span className="text-base font-bold text-primary sm:text-lg">{displayPrice}</span>
               {originalPrice && <span className="text-xs text-muted-foreground line-through sm:text-sm">{originalPrice}</span>}
             </div>
+            {isDeposit && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Cọc trước <span className="font-semibold text-foreground">{formatCurrency(depositUnitCents, VND_CURRENCY)}</span> · Có hàng sau {product.lead_time_text}
+              </p>
+            )}
             <Button onClick={handleAddToCart} disabled={isSoldOut} className="mt-3 w-full text-xs font-semibold sm:mt-4 sm:text-sm" size="sm">
-              <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" /> {isSoldOut ? 'Hết hàng' : 'Thêm vào giỏ'}
+              <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" /> {isSoldOut ? 'Hết hàng' : isDeposit ? 'Đặt cọc ngay' : 'Thêm vào giỏ'}
             </Button>
           </div>
         </div>

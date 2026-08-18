@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Truck, Landmark, Wallet, MapPinned, Ticket, X, Check } from 'lucide-react';
+import { Loader2, Truck, Landmark, Wallet, MapPinned, Ticket, X, Check, Clock } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
-import { createOrder, formatCurrency, VND_CURRENCY } from '@/api/EcommerceApi';
+import { createOrder, formatCurrency, VND_CURRENCY, getDueNowUnitCents } from '@/api/EcommerceApi';
 import { isHoChiMinhCity } from '@/lib/vnAddress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +48,17 @@ const CheckoutPage = () => {
   }, [profile]);
 
   const subtotalInCents = useMemo(
-    () => cartItems.reduce((sum, item) => sum + (item.variant.sale_price_in_cents ?? item.variant.price_in_cents) * item.quantity, 0),
+    () => cartItems.reduce((sum, item) => sum + getDueNowUnitCents(item.product, item.variant) * item.quantity, 0),
+    [cartItems]
+  );
+  const hasDepositItems = cartItems.some((item) => item.product.requires_deposit);
+  const remainingOnDeliveryCents = useMemo(
+    () => cartItems.reduce((sum, item) => {
+      if (!item.product.requires_deposit) return sum;
+      const full = item.variant.sale_price_in_cents ?? item.variant.price_in_cents;
+      const due = getDueNowUnitCents(item.product, item.variant);
+      return sum + Math.max(0, full - due) * item.quantity;
+    }, 0),
     [cartItems]
   );
   const shippingFeeInCents = addressData ? (isHoChiMinhCity(addressData.city) ? FEE_HCM : FEE_NATIONWIDE) : 0;
@@ -272,20 +282,30 @@ const CheckoutPage = () => {
           <div className="rounded-lg border border-border bg-card p-4 sm:p-6 lg:col-span-2 h-fit">
             <h2 className="font-display text-lg font-semibold">Đơn hàng của bạn</h2>
             <div className="mt-4 space-y-3">
-              {cartItems.map((item) => (
+              {cartItems.map((item) => {
+                const isDeposit = item.product.requires_deposit;
+                const unitDue = getDueNowUnitCents(item.product, item.variant);
+                return (
                 <div key={item.variant.id} className="flex items-center gap-3">
                   <img src={item.product.image} alt={item.product.title} className="h-12 w-12 rounded-md object-cover sm:h-14 sm:w-14" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">{item.product.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.variant.title} × {item.quantity}</p>
+                    <p className="text-xs text-muted-foreground">{item.variant.title} × {item.quantity}{isDeposit && ' · Đặt cọc'}</p>
                   </div>
-                  <span className="text-sm font-semibold">{item.variant.sale_price_formatted}</span>
+                  <span className="text-sm font-semibold">{formatCurrency(unitDue * item.quantity, VND_CURRENCY)}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
+            {hasDepositItems && (
+              <div className="mt-3 flex items-center gap-2 rounded-md border border-foreground/20 bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 shrink-0" />
+                Đơn có sản phẩm đặt cọc trước — chỉ thu tiền cọc ngay bây giờ, còn <span className="font-semibold text-foreground">{formatCurrency(remainingOnDeliveryCents, VND_CURRENCY)}</span> sẽ thu khi giao hàng.
+              </div>
+            )}
             <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex items-center justify-between text-muted-foreground">
-                <span>Tạm tính</span>
+                <span>Tạm tính{hasDepositItems && ' (tiền cọc)'}</span>
                 <span>{formatCurrency(subtotalInCents, VND_CURRENCY)}</span>
               </div>
               <div className="flex items-center justify-between text-muted-foreground">

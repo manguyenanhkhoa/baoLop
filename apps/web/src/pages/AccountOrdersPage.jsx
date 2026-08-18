@@ -71,16 +71,21 @@ const OrderCard = ({ order }) => {
       <div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
         {(order.order_items ?? []).map((it) => (
           <div key={it.id} className="flex justify-between text-muted-foreground">
-            <span>{it.product_title} ({it.variant_title}) × {it.quantity}</span>
+            <span>{it.product_title} ({it.variant_title}) × {it.quantity}{it.is_deposit && ' · Đặt cọc'}</span>
             <span>{formatCurrency(it.price_in_cents * it.quantity, VND_CURRENCY)}</span>
           </div>
         ))}
         <div className="flex justify-between pt-1 font-semibold text-foreground">
-          <span>Tổng cộng</span>
+          <span>Đã thanh toán</span>
           <span>{formatCurrency(order.total_in_cents, VND_CURRENCY)}</span>
         </div>
         {order.voucher_code && (
           <p className="pt-1 text-xs text-primary">Đã dùng voucher {order.voucher_code} (-{formatCurrency(order.discount_in_cents, VND_CURRENCY)})</p>
+        )}
+        {(order.order_items ?? []).some((it) => it.is_deposit) && (
+          <p className="pt-1 text-xs font-medium text-foreground">
+            Còn lại thu khi nhận hàng: {formatCurrency((order.order_items ?? []).reduce((s, it) => s + (it.remaining_amount_cents ?? 0), 0), VND_CURRENCY)}
+          </p>
         )}
       </div>
 

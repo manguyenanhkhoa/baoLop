@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getProduct, getProductQuantities } from '@/api/EcommerceApi';
+import { getProduct, getProductQuantities, getDueNowUnitCents, formatCurrency, VND_CURRENCY } from '@/api/EcommerceApi';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Loader2, ArrowLeft, CheckCircle, Minus, Plus, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Loader2, ArrowLeft, CheckCircle, Minus, Plus, XCircle, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
 const placeholderImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlNWU1Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktow7RuZyBjw7MgxeF1aDwvdGV4dD4KPC9zdmc+Cg==";
 
@@ -142,6 +142,11 @@ function ProductDetailPage() {
   const isStockManaged = selectedVariant?.manage_inventory ?? false;
   const canAddToCart = !isStockManaged || quantity <= availableStock;
 
+  const isDeposit = product.requires_deposit && selectedVariant;
+  const depositUnitCents = isDeposit ? getDueNowUnitCents(product, selectedVariant) : null;
+  const fullUnitCents = selectedVariant ? (selectedVariant.sale_price_in_cents ?? selectedVariant.price_in_cents) : 0;
+  const remainingUnitCents = isDeposit ? Math.max(0, fullUnitCents - depositUnitCents) : 0;
+
   const currentImage = product.images[currentImageIndex];
   const hasMultipleImages = product.images.length > 1;
 
@@ -230,6 +235,17 @@ function ProductDetailPage() {
               )}
             </div>
 
+            {isDeposit && (
+              <div className="mt-4 rounded-md border border-foreground/20 bg-secondary/50 p-3 text-sm">
+                <p className="flex items-center gap-1.5 font-semibold"><Clock className="h-4 w-4" /> Sản phẩm cần đặt cọc trước</p>
+                <div className="mt-2 space-y-1 text-muted-foreground">
+                  <div className="flex justify-between"><span>Đặt cọc ngay</span><span className="font-semibold text-foreground">{formatCurrency(depositUnitCents, VND_CURRENCY)}</span></div>
+                  <div className="flex justify-between"><span>Còn lại (trả khi nhận hàng)</span><span>{formatCurrency(remainingUnitCents, VND_CURRENCY)}</span></div>
+                  <div className="flex justify-between"><span>Thời gian có hàng</span><span className="font-medium text-foreground">{product.lead_time_text}</span></div>
+                </div>
+              </div>
+            )}
+
             {product.description && (
               <div className="prose prose-sm mt-4 max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: product.description }} />
             )}
@@ -275,7 +291,7 @@ function ProductDetailPage() {
 
             <div className="mt-auto pt-6">
               <Button onClick={handleAddToCart} size="lg" className="w-full text-base font-semibold" disabled={!canAddToCart || !product.purchasable}>
-                <ShoppingCart className="mr-2 h-5 w-5" /> Thêm vào giỏ
+                <ShoppingCart className="mr-2 h-5 w-5" /> {isDeposit ? 'Đặt cọc ngay' : 'Thêm vào giỏ'}
               </Button>
 
               {isStockManaged && canAddToCart && product.purchasable && (

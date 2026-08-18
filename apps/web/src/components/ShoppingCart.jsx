@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart as ShoppingCartIcon, X } from 'lucide-react';
+import { ShoppingCart as ShoppingCartIcon, X, Clock } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { formatCurrency, VND_CURRENCY, getDueNowUnitCents } from '@/api/EcommerceApi';
 
 const ShoppingCart = ({ isCartOpen, setIsCartOpen }) => {
   const { toast } = useToast();
@@ -65,15 +66,25 @@ const ShoppingCart = ({ isCartOpen, setIsCartOpen }) => {
                   <p>Giỏ hàng của bạn đang trống.</p>
                 </div>
               ) : (
-                cartItems.map(item => (
+                cartItems.map(item => {
+                  const isDeposit = item.product.requires_deposit;
+                  const unitDue = getDueNowUnitCents(item.product, item.variant);
+                  return (
                   <div key={item.variant.id} className="flex items-center gap-4 bg-card border border-border p-3 rounded-lg">
                     <img src={item.product.image} alt={item.product.title} className="w-20 h-20 object-cover rounded-md" />
                     <div className="flex-grow">
                       <h3 className="font-semibold text-card-foreground">{item.product.title}</h3>
                       <p className="text-sm text-muted-foreground">{item.variant.title}</p>
-                      <p className="text-sm text-primary font-bold">
-                        {item.variant.sale_price_formatted}
-                      </p>
+                      {isDeposit ? (
+                        <>
+                          <p className="text-sm text-primary font-bold flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Cọc {formatCurrency(unitDue, VND_CURRENCY)}</p>
+                          <p className="text-xs text-muted-foreground">Có hàng sau {item.product.lead_time_text}</p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-primary font-bold">
+                          {item.variant.sale_price_formatted}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <div className="flex items-center border border-border rounded-md">
@@ -84,7 +95,8 @@ const ShoppingCart = ({ isCartOpen, setIsCartOpen }) => {
                       <Button onClick={() => removeFromCart(item.variant.id)} size="sm" variant="ghost" className="text-destructive hover:text-destructive/90 text-xs">Xoá</Button>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
             {cartItems.length > 0 && (

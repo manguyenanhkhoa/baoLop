@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { formatCurrency } from '@/api/EcommerceApi';
+import { formatCurrency, getDueNowUnitCents } from '@/api/EcommerceApi';
 
 const CartContext = createContext();
 
@@ -67,8 +67,7 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = useCallback(() => {
     return formatCurrency(cartItems.reduce((total, item) => {
-      const price = item.variant.sale_price_in_cents ?? item.variant.price_in_cents;
-      return total + price * item.quantity;
+      return total + getDueNowUnitCents(item.product, item.variant) * item.quantity;
     }, 0), cartItems[0].variant.currency_info);
   }, [cartItems]);
 
