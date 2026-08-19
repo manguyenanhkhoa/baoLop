@@ -3,6 +3,7 @@ import { Route, Routes, BrowserRouter as Router, Navigate } from 'react-router-d
 import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from '@/hooks/useCart';
 import { AuthProvider } from '@/hooks/useAuth';
+import { ThemeProvider } from '@/hooks/useTheme';
 import { Toaster } from '@/components/ui/toaster';
 import Layout from '@/components/Layout';
 import RequireAdmin from '@/components/RequireAdmin';
@@ -25,8 +26,9 @@ import AdminCustomersPage from '@/pages/admin/AdminCustomersPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
         <Router>
           <ScrollToTop />
           <Routes>
@@ -55,7 +57,8 @@ function App() {
           <Toaster />
         </Router>
       </CartProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

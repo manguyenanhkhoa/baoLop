@@ -26,6 +26,7 @@ const OrderRow = ({ order, onUpdate }) => {
 
   const currentIndex = getStatusIndex(order.status);
   const isCancelled = order.status === 'cancelled';
+  const hasDeposit = (order.order_items ?? []).some((it) => it.is_deposit);
 
   const setStatus = async (status) => {
     setSaving(true);
@@ -170,7 +171,7 @@ const OrderRow = ({ order, onUpdate }) => {
                         <SelectItem value="failed">Thất bại</SelectItem>
                       </SelectContent>
                     </Select>
-                    {order.payment_method !== 'cod' && order.payment_status !== 'paid' && (
+                    {order.payment_method !== 'cod' && order.payment_status !== 'paid' && !hasDeposit && (
                       <Button size="sm" variant="outline" onClick={switchToCod} disabled={saving}>
                         Chuyển sang thanh toán khi nhận hàng (COD)
                       </Button>
@@ -178,7 +179,7 @@ const OrderRow = ({ order, onUpdate }) => {
                   </div>
                   {order.payment_method !== 'cod' && order.payment_status === 'pending' && (
                     <p className="mt-2 text-xs font-medium text-destructive">
-                      ⚠️ Khách chọn {PAYMENT_LABEL[order.payment_method]} nhưng chưa xác nhận thanh toán — kiểm tra tài khoản ngân hàng/ví trước khi đóng gói, hoặc chuyển sang COD nếu khách muốn trả tiền mặt khi nhận hàng.
+                      ⚠️ Khách chọn {PAYMENT_LABEL[order.payment_method]} nhưng chưa xác nhận thanh toán{hasDeposit ? ' — đây là đơn đặt cọc trước, cần xác nhận đã nhận tiền cọc trước khi đóng gói.' : ' — kiểm tra tài khoản ngân hàng/ví trước khi đóng gói, hoặc chuyển sang COD nếu khách muốn trả tiền mặt khi nhận hàng.'}
                     </p>
                   )}
 

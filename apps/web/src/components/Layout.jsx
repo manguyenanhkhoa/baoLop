@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate, Outlet } from 'react-router-dom';
-import { ShoppingCart as CartIcon, Search, User, LayoutDashboard, Menu, LogOut, Settings, PackageSearch, ChevronDown } from 'lucide-react';
+import { ShoppingCart as CartIcon, Search, User, LayoutDashboard, Menu, LogOut, Settings, PackageSearch, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import ShoppingCart from '@/components/ShoppingCart';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -30,6 +31,7 @@ const Layout = () => {
   const [query, setQuery] = useState('');
   const { cartItems } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const count = cartItems.reduce((n, i) => n + i.quantity, 0);
 
@@ -51,8 +53,11 @@ const Layout = () => {
               </button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[85vw] max-w-sm">
-              <SheetHeader>
+              <SheetHeader className="flex-row items-center justify-between space-y-0">
                 <SheetTitle className="text-left"><Logo /></SheetTitle>
+                <button onClick={toggleTheme} className="rounded-full border border-border p-2 hover:border-primary" aria-label="Đổi chế độ sáng/tối">
+                  {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </button>
               </SheetHeader>
 
               <form onSubmit={onSearch} className="relative mt-4">
@@ -173,7 +178,11 @@ const Layout = () => {
             </Link>
           )}
 
-          <button onClick={() => setIsCartOpen(true)} className="relative ml-auto rounded-full border border-border p-2 hover:border-primary lg:ml-2" aria-label="Giỏ hàng">
+          <button onClick={toggleTheme} className="ml-auto rounded-full border border-border p-2 hover:border-primary" aria-label="Đổi chế độ sáng/tối">
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+
+          <button onClick={() => setIsCartOpen(true)} className="relative rounded-full border border-border p-2 hover:border-primary" aria-label="Giỏ hàng">
             <CartIcon className="h-5 w-5" />
             {count > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">

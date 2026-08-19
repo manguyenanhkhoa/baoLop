@@ -14,12 +14,6 @@ import { Label } from '@/components/ui/label';
 import MapPicker from '@/components/MapPicker';
 import AddressPicker from '@/components/AddressPicker';
 
-const PAYMENT_METHODS = [
-  { id: 'cod', label: 'Thanh toán khi nhận hàng (COD)', icon: Truck },
-  { id: 'bank_transfer', label: 'Chuyển khoản ngân hàng (VCB - quét QR)', icon: Landmark },
-  { id: 'momo', label: 'Ví Momo (sắp ra mắt)', icon: Wallet, disabled: true },
-];
-
 const FEE_HCM = 20000;
 const FEE_NATIONWIDE = 30000;
 
@@ -52,6 +46,18 @@ const CheckoutPage = () => {
     [cartItems]
   );
   const hasDepositItems = cartItems.some((item) => item.product.requires_deposit);
+
+  const paymentMethods = useMemo(() => [
+    { id: 'cod', label: 'Thanh toán khi nhận hàng (COD)', icon: Truck, disabled: hasDepositItems, disabledReason: 'Đơn có sản phẩm đặt cọc trước, cần thanh toán tiền cọc trước khi lên đơn.' },
+    { id: 'bank_transfer', label: 'Chuyển khoản ngân hàng (VCB - quét QR)', icon: Landmark },
+    { id: 'momo', label: 'Ví Momo (sắp ra mắt)', icon: Wallet, disabled: true },
+  ], [hasDepositItems]);
+
+  useEffect(() => {
+    if (hasDepositItems && paymentMethod === 'cod') {
+      setPaymentMethod('bank_transfer');
+    }
+  }, [hasDepositItems, paymentMethod]);
   const remainingOnDeliveryCents = useMemo(
     () => cartItems.reduce((sum, item) => {
       if (!item.product.requires_deposit) return sum;
@@ -246,11 +252,15 @@ const CheckoutPage = () => {
 
             <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-lg font-semibold">Phương thức thanh toán</h2>
+              {hasDepositItems && (
+                <p className="mt-1 text-xs text-muted-foreground">Đơn có sản phẩm đặt cọc trước — chỉ chọn được phương thức thanh toán trước.</p>
+              )}
               <div className="mt-4 space-y-2">
-                {PAYMENT_METHODS.map(({ id, label, icon: Icon, disabled }) => (
+                {paymentMethods.map(({ id, label, icon: Icon, disabled, disabledReason }) => (
                   <label
                     key={id}
                     className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${paymentMethod === id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+                    title={disabled ? disabledReason : undefined}
                   >
                     <input
                       type="radio"
