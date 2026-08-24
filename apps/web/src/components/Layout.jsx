@@ -18,12 +18,15 @@ const navClass = ({ isActive }) =>
 const mobileNavClass = ({ isActive }) =>
   `rounded-md px-3 py-2.5 text-base font-medium transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground/90 hover:bg-secondary'}`;
 
-const Logo = () => (
-  <Link to="/" className="flex shrink-0 items-center gap-2">
-    <img src="/baoLop.ico" alt="Báo Lốp" className="h-8 w-8 object-contain" />
-    <span className="font-display text-lg font-bold tracking-tight sm:text-xl">BÁO LỐP</span>
-  </Link>
-);
+const Logo = () => {
+  const { theme } = useTheme();
+  return (
+    <Link to="/" className="flex shrink-0 items-center gap-2">
+      <img src={theme === 'dark' ? '/baoLop_white.ico' : '/baoLop.ico'} alt="Báo Lốp" className="h-8 w-8 object-contain" />
+      <span className="font-display text-lg font-bold tracking-tight sm:text-xl">BÁO LỐP</span>
+    </Link>
+  );
+};
 
 const Layout = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
