@@ -77,7 +77,7 @@ const StorePage = () => {
     <>
       <Helmet>
         <title>Sản phẩm — BÁO LỐP</title>
-        <meta name="description" content="Lọc và tìm mô hình, sa bàn, xe die-cast 1:64 và 1:32 theo loại và mức giá." />
+        <meta name="description" content="Lọc và tìm xe die-cast 1:64, dio,... theo loại và mức giá." />
       </Helmet>
 
       <div className="mx-auto max-w-[90rem] px-4 py-8 sm:px-6 sm:py-10">

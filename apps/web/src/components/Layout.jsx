@@ -125,7 +125,7 @@ const Layout = () => {
 
           <form onSubmit={onSearch} className="relative hidden flex-1 md:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm mô kiếm dio, hãng xe,..." className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tìm kiếm" className="w-full rounded-full border border-border bg-secondary py-2 pl-10 pr-4 text-sm outline-none focus:border-primary" />
           </form>
 
           <nav className="ml-auto hidden items-center gap-6 lg:flex">
